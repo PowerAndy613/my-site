@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>美股群組卡片追蹤系統（yfinance via Pyodide 範例）</title>
+  <title>美股追蹤（yfinance via Pyodide 範例）</title>
 
-  <!-- Chart.js（圖表） -->
+  <!-- Chart.js（鎖版） -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
@@ -17,6 +17,7 @@
     #status{margin-top:8px;color:#444}
     #output{white-space:pre-wrap;background:#f6f8fa;padding:8px;border-radius:8px;margin-top:8px;min-height:40px}
     canvas{max-width:100%}
+    .muted{color:#6b7280;font-size:13px}
   </style>
 </head>
 <body>
@@ -24,10 +25,10 @@
 
   <div class="card">
     <div style="font-weight:800;margin-bottom:6px">說明（重要）</div>
-    <div style="font-size:13px;color:#334155">
-      - 本頁面示範如何在瀏覽器使用 Pyodide 執行 Python，並透過 yfinance 抓歷史股價。<br>
-      - 注意：yfinance 的底層會呼叫 Yahoo Finance 的 API，若該服務不允許跨域（CORS），瀏覽器端會被阻擋而失敗。若遇到 CORS / 被封鎖，請改由後端（serverless 或 VM）使用 yfinance 抓取，再提供前端 API。<br>
-      - 首次載入 Pyodide 會下載較多資料（數 MB），可能較慢，請耐心等候。
+    <div class="muted">
+      - 本頁示範在瀏覽器用 Pyodide 執行 Python 並嘗試安裝 yfinance 抓歷史股價。<br>
+      - 注意：yfinance 會向 Yahoo Finance 發出請求，若該服務不允許跨域（CORS），瀏覽器端會被阻擋，無法成功取資料。遇到 CORS/安裝或相依性問題時，請改由後端 server（serverless）抓取並回傳給前端。<br>
+      - 首次載入 Pyodide 與安裝套件會下載數 MB，可能需要較長時間（請耐心等待並查看 Console 訊息）。
     </div>
   </div>
 
@@ -52,7 +53,9 @@
 
   <div class="card">
     <div style="font-weight:800;margin-bottom:6px">歷史收盤價圖</div>
-    <canvas id="priceChart" height="200"></canvas>
+    <div style="position:relative;height:320px">
+      <canvas id="priceChart"></canvas>
+    </div>
   </div>
 
   <!-- Pyodide -->
@@ -66,36 +69,42 @@
     const statusEl = document.getElementById('status');
     const outputEl = document.getElementById('output');
 
-    // 初始化並載入 Pyodide（背景）
+    // 初始化 Pyodide（背景載入）
     async function initPyodide() {
+      if (pyodide) return;
       try {
         statusEl.textContent = '狀態：正在載入 Pyodide（首次載入較慢）...';
         pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/" });
-        statusEl.textContent = '狀態：Pyodide 已載入。準備安裝套件（yfinance 需額外安裝）';
+        statusEl.textContent = '狀態：Pyodide 已載入。';
+        console.log('Pyodide loaded');
       } catch (err) {
         statusEl.textContent = '狀態：載入 Pyodide 失敗：' + err;
-        console.error(err);
+        console.error('initPyodide error', err);
+        throw err;
       }
     }
-    initPyodide();
 
-    // helper：在 Python 環境用 micropip 安裝套件（yfinance, lxml 可能會被要求）
+    // 確保 micropip 與 yfinance 已安裝（如果尚未）
     async function ensureYFinanceInstalled() {
       if (!pyodide) throw new Error('Pyodide 尚未載入');
-      statusEl.textContent = '狀態：安裝依賴（pandas, numpy, yfinance）... 可能需要一段時間';
+      statusEl.textContent = '狀態：載入 micropip 與科學套件並安裝 yfinance（可能需要數十秒）...';
       try {
-        // 先載入內建科學套件（若尚未）
-        await pyodide.loadPackage(['numpy', 'pandas']);
-        // micropip 安裝 yfinance（非同步）
+        // 先用 loadPackage 載入 micropip、numpy、pandas（可加上其它 pyodide 內建套件）
+        await pyodide.loadPackage(['micropip', 'numpy', 'pandas']);
+        console.log('micropip,numpy,pandas loaded via pyodide.loadPackage');
+        // 用 micropip 在 Python 環境安裝 yfinance（非同步）
         await pyodide.runPythonAsync(`
 import micropip
-# 允許安裝最新 yfinance；若安裝失敗，錯誤會被拋出
-await micropip.install('yfinance')
+# 若希望指定版本可改成 await micropip.install("yfinance==0.2.4")
+await micropip.install("yfinance")
 `);
         statusEl.textContent = '狀態：yfinance 已安裝（或已存在）。';
+        console.log('yfinance installed');
       } catch (err) {
-        statusEl.textContent = '狀態：安裝 yfinance 失敗（可能因為網路或相依套件）: ' + err;
-        console.error('micropip install error', err);
+        console.error('ensureYFinanceInstalled error', err);
+        statusEl.textContent = '狀態：安裝 yfinance 失敗：' + (err && err.toString ? err.toString() : JSON.stringify(err));
+        // 可包含更多指示給使用者
+        outputEl.textContent = '安裝 yfinance 失敗（請查看 Console 以獲取詳細錯誤）。若失敗，建議改用後端抓取資料。';
         throw err;
       }
     }
@@ -103,30 +112,25 @@ await micropip.install('yfinance')
     // 從 Pyodide 執行 yfinance 抓取歷史資料
     async function fetchWithYFinance(ticker, start, end) {
       if (!pyodide) throw new Error('Pyodide 尚未載入');
-      // 把參數傳到 python 全域變數，避免 string injection 問題
+      // 將參數放入 pyodide 全域，避免在代碼中拼接字串引起問題
       pyodide.globals.set("TICKER", ticker);
       pyodide.globals.set("START", start || "");
       pyodide.globals.set("END", end || "");
-      // Python 端的抓取與格式化結果為 list of dicts [{'date': 'YYYY-MM-DD', 'close': 123.45}, ...]
       const code = `
 import yfinance as yf
 import pandas as pd
 def _fetch(ticker, start, end):
     t = yf.Ticker(ticker)
-    # 若 start 或 end 為空字串，yfinance 會以預設行為處理
     df = t.history(start=start if start else None, end=end if end else None)
     if df is None or df.empty:
         return []
     df = df.reset_index()
-    # 只取 Date 與 Close
     rows = []
     for _, row in df.iterrows():
-        # 確保 Close 可轉為 float
         try:
             c = float(row['Close'])
         except Exception:
             continue
-        # Date 可能是 Timestamp
         d = row['Date']
         try:
             ds = str(d.date())
@@ -141,15 +145,16 @@ result = _fetch(TICKER, START, END)
         await pyodide.runPythonAsync(code);
         const resultProxy = pyodide.globals.get('result');
         const jsResult = resultProxy.toJs({ depth: 1 });
-        // 清理 proxies
-        resultProxy.destroy && resultProxy.destroy();
+        // 清理 proxy
+        if (resultProxy.destroy) resultProxy.destroy();
         return jsResult;
       } catch (err) {
-        console.error('Python yfinance fetch error', err);
+        console.error('fetchWithYFinance python error', err);
+        // 抓到的錯誤可能是 CORS、requests 失敗或設置錯誤，直接向上拋出以便呼叫端處理
         throw err;
       } finally {
-        // 清除临时全域變數（避免殘留）
-        try { pyodide.globals.delete('TICKER'); pyodide.globals.delete('START'); pyodide.globals.delete('END'); } catch(e){}
+        // 移除臨時全域變數，避免殘留
+        try { pyodide.globals.delete('TICKER'); pyodide.globals.delete('START'); pyodide.globals.delete('END'); } catch(e){/*ignore*/ }
       }
     }
 
@@ -158,7 +163,6 @@ result = _fetch(TICKER, START, END)
       const ctx = document.getElementById('priceChart').getContext('2d');
       if (priceChart) priceChart.destroy();
       if (!data || data.length === 0) {
-        // 清空圖表
         priceChart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [] }, options: {} });
         return;
       }
@@ -197,36 +201,45 @@ result = _fetch(TICKER, START, END)
       statusEl.textContent = '狀態：準備使用 Pyodide 與 yfinance 抓取資料...';
 
       try {
-        if (!pyodide) {
-          await initPyodide(); // 若尚未載入
-        }
-        // 安裝依賴（只做一次）
+        await initPyodide(); // 若尚未載入則載入
+        // 安裝依賴（只做一次，若失敗會拋出）
         await ensureYFinanceInstalled();
 
         statusEl.textContent = '狀態：正在以 yfinance 抓取資料（會使用瀏覽器網路）...';
         const data = await fetchWithYFinance(ticker, start, end);
+
         if (!data || data.length === 0) {
           outputEl.textContent = '未取得資料（可能無歷史資料或被 API 阻擋／CORS）。請檢查代號或改用 server 端抓取。';
           drawChart([]);
           statusEl.textContent = '狀態：已完成（無資料）';
           return;
         }
-        // 顯示簡單表格文字
+        // 顯示最近資料
         outputEl.textContent = data.slice(-10).map(r => `${r.date}  收盤：${r.close}`).join('\n');
         drawChart(data);
         statusEl.textContent = '狀態：抓取並繪圖完成';
       } catch (err) {
         // 常見錯誤：CORS / 安裝 failure / yfinance 相依缺失
-        console.error(err);
-        outputEl.textContent = '發生錯誤：' + (err && err.toString ? err.toString() : JSON.stringify(err));
-        statusEl.textContent = '狀態：發生錯誤（請查看 console 或回報給我）';
+        console.error('Fetch flow error', err);
+        // 若錯誤訊息中包含 CORS 或 blocked，提示使用者改後端
+        const msg = (err && err.toString) ? err.toString() : JSON.stringify(err);
+        if (/CORS|cross|blocked by/i.test(msg)) {
+          outputEl.textContent = '發生 CORS/跨域錯誤：瀏覽器無法直接存取遠端 API。建議改用後端 proxy（serverless）來抓取資料。\nConsole 詳細錯誤：\n' + msg;
+        } else {
+          outputEl.textContent = '發生錯誤（請查看 console 以獲取詳細錯誤）：\n' + msg;
+        }
+        statusEl.textContent = '狀態：發生錯誤，請查看 Console';
       }
     });
 
     document.getElementById('clearOutput').addEventListener('click', () => {
       outputEl.textContent = '';
       if (priceChart) { priceChart.destroy(); priceChart = null; }
+      statusEl.textContent = '狀態：已清除';
     });
+
+    // 於載入時可先背景載入 Pyodide（非必要）
+    // initPyodide(); // 若想自動載入可解除註解
   </script>
 </body>
 </html>
