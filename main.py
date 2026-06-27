@@ -6,12 +6,12 @@ import os
 
 app = FastAPI(title="yfinance proxy")
 
-# 允許前端網址（測試可先用 '*'，上線請改成你的 Pages 網域如 https://PowerAndy613.github.io）
-allowed = os.getenv("ALLOWED_ORIGINS", ", http://localhost:8000, http://127.0.0.1:8000")
-if allowed == "*":
+# 允許前端網址
+allowed = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000,https://PowerAndy613.github.io")
+if allowed.strip() == "*":
     origins = ["*"]
 else:
-    origins = [o.strip() for o in allowed.split(",")]
+    origins = [o.strip() for o in allowed.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,7 +31,7 @@ def get_history(ticker: str, start: str = None, end: str = None):
     Returns JSON: {"data": [{"date": "YYYY-MM-DD", "close": 123.45}, ...]}
     """
     try:
-        t = yf.Ticker(ticker)
+        t = yf.Ticker(ticker.upper().strip())
         df = t.history(start=start if start else None, end=end if end else None)
         if df is None or df.empty:
             return {"data": []}
