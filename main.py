@@ -7,7 +7,7 @@ import os
 app = FastAPI(title="yfinance proxy")
 
 # 允許前端網址（測試可先用 '*'，上線請改成你的 Pages 網域如 https://PowerAndy613.github.io）
-allowed = os.getenv("ALLOWED_ORIGINS", "*")
+allowed = os.getenv("ALLOWED_ORIGINS", ", http://localhost:8000, http://127.0.0.1:8000")
 if allowed == "*":
     origins = ["*"]
 else:
