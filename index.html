@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>投資人FCN儀表板</title>
+  <title>投資人FCN儀表板 - 完整合約邏輯</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -49,6 +49,13 @@
     .danger{background:#ef4444;color:#fff}
     .success{background:#10b981;color:#fff}
     .outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.3)}
+    .chart-toggle-btn{background:#e5e7eb;color:#111;border:0;padding:4px 12px;border-radius:10px;font-size:12px;font-weight:700;min-height:30px;width:auto;cursor:pointer}
+    .chart-toggle-btn:hover{background:#d1d5db}
+
+    /* ★★★ 檔案上傳隱藏樣式 ★★★ */
+    .file-input-hidden {
+      display: none;
+    }
 
     .client-card{
       border:2px solid #4f46e5;
@@ -103,6 +110,44 @@
     .client-header .client-actions button.outline:hover{background:rgba(255,255,255,0.15)}
     .client-body{padding:10px}
     .client-body .group-list{margin-top:6px}
+
+    .client-charts-section{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:2px solid #4f46e5;
+    }
+    .client-charts-section .charts-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-bottom:8px;
+    }
+    .client-charts-section .charts-header .title{
+      font-weight:800;
+      font-size:14px;
+      color:#1f2937;
+    }
+    .client-charts-section .charts-header .btn-group{
+      display:flex;
+      gap:4px;
+    }
+    .client-charts-section .charts-header .btn-group button{
+      background:#e5e7eb;
+      color:#111;
+      border:0;
+      padding:4px 12px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:700;
+      min-height:30px;
+      width:auto;
+      cursor:pointer;
+    }
+    .client-charts-section .charts-header .btn-group button:hover{background:#d1d5db}
+    .client-charts-section .charts-content{display:block;}
+    .client-charts-section .charts-content.collapsed{display:none;}
 
     details.group-card{
       border:1px solid #d9deea;
@@ -240,19 +285,6 @@
     .tag-status.strike{background:#f59e0b;color:#fff}
     .tag-status.normal{background:#10b981;color:#fff}
 
-    .contract-period {
-      font-size:13px;
-      color:#475569;
-      background:#f1f5f9;
-      padding:4px 12px;
-      border-radius:8px;
-      margin-top:2px;
-      display:inline-block;
-    }
-    .contract-period strong {
-      color:#1e293b;
-    }
-
     .modal{
       display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);padding:12px;box-sizing:border-box
     }
@@ -291,6 +323,15 @@
       margin-bottom:6px;
       color:#1f2937;
     }
+    .fcn-pie-card .total-fcn {
+      font-size:14px;
+      color:#4b5563;
+      margin-bottom:8px;
+    }
+    .fcn-pie-card .total-fcn strong {
+      color:#f59e0b;
+      font-size:16px;
+    }
 
     .result-detail {
       background:#f8fafc;
@@ -303,16 +344,43 @@
     }
     .result-detail strong {color:#0f172a}
 
+    /* ★★★ 最終價值總資產圓餅圖 - 可展開/收合 ★★★ */
     .final-value-pie-card {
       margin-top:12px;
       padding-top:12px;
       border-top:2px solid #4f46e5;
     }
+    .final-value-pie-card .pie-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-bottom:6px;
+    }
     .final-value-pie-card .pie-title {
       font-weight:700;
       font-size:15px;
-      margin-bottom:6px;
       color:#1f2937;
+    }
+    .final-value-pie-card .pie-toggle-btn {
+      background:#e5e7eb;
+      color:#111;
+      border:0;
+      padding:4px 12px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:700;
+      min-height:30px;
+      width:auto;
+      cursor:pointer;
+    }
+    .final-value-pie-card .pie-toggle-btn:hover{background:#d1d5db}
+    .final-value-pie-card .pie-body {
+      display:block;
+    }
+    .final-value-pie-card .pie-body.collapsed {
+      display:none;
     }
     .final-value-pie-card .total-asset {
       font-size:14px;
@@ -324,62 +392,32 @@
       font-size:16px;
     }
 
-    .fcn-pie-card .total-fcn {
-      font-size:14px;
-      color:#4b5563;
-      margin-bottom:8px;
+    /* CSV 按鈕樣式 */
+    .btn-export-csv {
+      background:#10b981;
+      color:#fff;
+      border:0;
+      font-weight:800;
+      cursor:pointer;
+      min-height:42px;
+      border-radius:12px;
+      padding:10px;
     }
-    .fcn-pie-card .total-fcn strong {
-      color:#f59e0b;
-      font-size:16px;
+    .btn-export-csv:hover {
+      background:#059669;
     }
-
-    .coupon-detail-table {
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-      margin-top:8px;
+    .btn-import-csv {
+      background:#8b5cf6;
+      color:#fff;
+      border:0;
+      font-weight:800;
+      cursor:pointer;
+      min-height:42px;
+      border-radius:12px;
+      padding:10px;
     }
-    .coupon-detail-table th {
-      background:#f1f5f9;
-      color:#1e293b;
-      font-weight:700;
-      padding:6px 8px;
-      text-align:center;
-      border:1px solid #e2e8f0;
-    }
-    .coupon-detail-table td {
-      padding:5px 8px;
-      text-align:center;
-      border:1px solid #e2e8f0;
-      font-variant-numeric:tabular-nums;
-    }
-    .coupon-detail-table tr:nth-child(even) td {
-      background:#f8fafc;
-    }
-    .coupon-detail-table .total-row td {
-      background:#e2e8f0;
-      font-weight:700;
-    }
-    .coupon-detail-table .ko-ended td {
-      background:#fef2f2 !important;
-      color:#9ca3af;
-    }
-    .coupon-detail-table .ko-ended td:first-child::after {
-      content: " ⛔ 已提前出場";
-      font-size:10px;
-      color:#ef4444;
-    }
-    .coupon-chart-container {
-      margin-top:10px;
-      padding-top:10px;
-      border-top:1px solid #e5e7eb;
-    }
-    .coupon-chart-container .chart-title {
-      font-weight:700;
-      font-size:13px;
-      color:#1f2937;
-      margin-bottom:4px;
+    .btn-import-csv:hover {
+      background:#7c3aed;
     }
 
     @media (max-width:760px){
@@ -424,13 +462,7 @@
       .chart-wrap{height:220px}
       .final-value-pie-card .pie-title {font-size:13px}
       .fcn-pie-card .pie-title {font-size:13px}
-      .coupon-detail-table {font-size:11px}
-      .coupon-detail-table th,.coupon-detail-table td {padding:3px 4px}
-      .contract-period {font-size:11px;padding:2px 8px}
-      .coupon-detail-table .ko-ended td:first-child::after {
-        content: " ⛔";
-        font-size:9px;
-      }
+      .final-value-pie-card .pie-toggle-btn {font-size:10px;padding:2px 8px;min-height:24px;}
     }
     @media (min-width:760px){
       body{padding:14px;padding-bottom:14px}
@@ -446,7 +478,7 @@
 <body>
 
 <!-- ===== 標題 ===== -->
-<h1>📊 投資人FCN儀表板</h1>
+<h1>📊 投資人FCN儀表板 - 完整合約邏輯</h1>
 
 <div class="card">
   <div class="section-title">📋 客戶與群組管理</div>
@@ -458,6 +490,10 @@
     <button onclick="loadAll()">抓取並顯示</button>
     <button class="secondary" onclick="saveSettings()">儲存設定</button>
     <button class="danger" onclick="clearSettings()">清除設定</button>
+    <button class="btn-export-csv" onclick="exportCSV()">📥 導出 CSV</button>
+    <!-- ★★★ 導入 CSV 按鈕 ★★★ -->
+    <button class="btn-import-csv" onclick="document.getElementById('csvFileInput').click()">📤 導入 CSV</button>
+    <input type="file" id="csvFileInput" class="file-input-hidden" accept=".csv" onchange="importCSV(event)">
   </div>
   <div style="height:8px;"></div>
   <div id="clientsContainer"></div>
@@ -510,6 +546,15 @@
     <span class="nav-icon"><i class="fa-solid fa-trash"></i></span>
     <span class="nav-text">清除</span>
   </button>
+  <button onclick="exportCSV()">
+    <span class="nav-icon"><i class="fa-solid fa-file-csv"></i></span>
+    <span class="nav-text">匯出</span>
+  </button>
+  <!-- ★★★ 手機版導入 CSV 按鈕 ★★★ -->
+  <button onclick="document.getElementById('csvFileInput').click()">
+    <span class="nav-icon"><i class="fa-solid fa-file-import"></i></span>
+    <span class="nav-text">導入</span>
+  </button>
 </nav>
 
 <script>
@@ -522,13 +567,6 @@ function formatNumber(num, decimals=2) {
   return parts[1] !== undefined ? `${intPart}.${parts[1]}` : intPart;
 }
 function formatCurrency(val){ return formatNumber(val, 2); }
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
-  return `${parts[0]}/${parts[1]}/${parts[2]}`;
-}
 
 // ========== API 設定 ==========
 const PROXY_API_BASE = 'https://yfin-proxy.onrender.com/history/';
@@ -585,6 +623,19 @@ function buildClientHTML(clientId, seq, data={}) {
         <div class="group-list" id="groupList_${clientId}"></div>
         <div class="group-actions">
           <button class="secondary" onclick="addGroupToClient('${clientId}')">＋ 新增群組 (子層)</button>
+        </div>
+        <!-- ★★★ 客戶總表（圖表區）- 放在 group-list 下方 ★★★ -->
+        <div class="client-charts-section" id="clientCharts_${clientId}">
+          <div class="charts-header">
+            <span class="title">📊 客戶總表（群組 / 最終價值 / FCN 本金）</span>
+            <div class="btn-group">
+              <button onclick="toggleClientCharts('${clientId}', true)">展開</button>
+              <button onclick="toggleClientCharts('${clientId}', false)">收合</button>
+            </div>
+          </div>
+          <div class="charts-content" id="clientChartsContent_${clientId}">
+            <!-- 圖表將由 JavaScript 動態生成 -->
+          </div>
         </div>
       </div>
     </div>
@@ -693,11 +744,15 @@ function toggleClient(clientId) {
 function expandAllClients() {
   document.querySelectorAll('.client-body').forEach(el => el.style.display = '');
   document.querySelectorAll('details.group-card').forEach(d => d.open = true);
+  document.querySelectorAll('.client-charts-section .charts-content').forEach(el => el.classList.remove('collapsed'));
+  document.querySelectorAll('.final-value-pie-card .pie-body').forEach(el => el.classList.remove('collapsed'));
 }
 
 function collapseAllClients() {
   document.querySelectorAll('.client-body').forEach(el => el.style.display = 'none');
   document.querySelectorAll('details.group-card').forEach(d => d.open = false);
+  document.querySelectorAll('.client-charts-section .charts-content').forEach(el => el.classList.add('collapsed'));
+  document.querySelectorAll('.final-value-pie-card .pie-body').forEach(el => el.classList.add('collapsed'));
 }
 
 function expandClientGroups(clientId) {
@@ -706,12 +761,43 @@ function expandClientGroups(clientId) {
     const body = document.getElementById(`clientBody_${clientId}`);
     if (body) body.style.display = '';
     clientEl.querySelectorAll('details.group-card').forEach(d => d.open = true);
+    const content = document.getElementById(`clientChartsContent_${clientId}`);
+    if (content) content.classList.remove('collapsed');
+    clientEl.querySelectorAll('.final-value-pie-card .pie-body').forEach(el => el.classList.remove('collapsed'));
 }
 
 function collapseClientGroups(clientId) {
     const clientEl = document.querySelector(`[data-client-id="${clientId}"]`);
     if (!clientEl) return;
     clientEl.querySelectorAll('details.group-card').forEach(d => d.open = false);
+    const content = document.getElementById(`clientChartsContent_${clientId}`);
+    if (content) content.classList.add('collapsed');
+    clientEl.querySelectorAll('.final-value-pie-card .pie-body').forEach(el => el.classList.add('collapsed'));
+}
+
+// ★★★ 客戶總表展開/收合 ★★★
+function toggleClientCharts(clientId, show) {
+    const content = document.getElementById(`clientChartsContent_${clientId}`);
+    if (!content) return;
+    if (show) {
+        content.classList.remove('collapsed');
+    } else {
+        content.classList.add('collapsed');
+    }
+}
+
+// ★★★ 最終價值圓餅圖展開/收合 ★★★
+function toggleFinalValuePie(clientId, show) {
+    const clientEl = document.querySelector(`[data-client-id="${clientId}"]`);
+    if (!clientEl) return;
+    const pieBodies = clientEl.querySelectorAll('.final-value-pie-card .pie-body');
+    pieBodies.forEach(el => {
+        if (show) {
+            el.classList.remove('collapsed');
+        } else {
+            el.classList.add('collapsed');
+        }
+    });
 }
 
 // ========== 群組操作 ==========
@@ -1083,9 +1169,6 @@ function calculateFCNContract(groupData, stockResults) {
   let statusDetail = '';
   const lastClose = closes[closes.length - 1];
   
-  // ★★★ 計算換股價值（用於 KI + Strike 情境） ★★★
-  let shareValue = 0;
-  
   if (koTriggered) {
     status = 'KO';
     earnedMonths = Math.min(triggeredMonth, totalMonths);
@@ -1104,9 +1187,8 @@ function calculateFCNContract(groupData, stockResults) {
       earnedMonths = totalMonths;
       totalCoupon = monthlyCoupon * totalMonths;
       shares = fcnAmount / strikePrice;
-      shareValue = lastClose * shares;
-      finalValue = shareValue + totalCoupon;
-      statusDetail = `🔄 KI 已觸發且到期價 (${formatCurrency(lastClose)}) < Strike (${formatCurrency(strikePrice)})，換股 ${shares.toFixed(4)} 股，價值 ${formatCurrency(shareValue)} + 配息 ${formatCurrency(totalCoupon)}`;
+      finalValue = lastClose * shares + totalCoupon;
+      statusDetail = `🔄 KI 已觸發且到期價 (${formatCurrency(lastClose)}) < Strike (${formatCurrency(strikePrice)})，換股 ${shares.toFixed(4)} 股，價值 ${formatCurrency(lastClose * shares)} + 配息 ${formatCurrency(totalCoupon)}`;
     }
   } else {
     status = 'Normal';
@@ -1115,12 +1197,6 @@ function calculateFCNContract(groupData, stockResults) {
     finalValue = fcnAmount + totalCoupon;
     statusDetail = `✅ 合約正常到期，拿回本金 ${formatCurrency(fcnAmount)} + 配息 ${formatCurrency(totalCoupon)}`;
   }
-  
-  // ★★★ 計算 displayMonths（KO 時只顯示到 KO 當月） ★★★
-  const displayMonths = koTriggered ? triggeredMonth : totalMonths;
-  
-  // ★★★ 判斷是否為 Strike 換股情境 ★★★
-  const isStrikeScenario = (status === 'Strike');
   
   return {
     status: status,
@@ -1136,68 +1212,15 @@ function calculateFCNContract(groupData, stockResults) {
     worstSymbol: worstStockCode,
     months: earnedMonths,
     totalMonths: totalMonths,
-    triggeredMonth: triggeredMonth,
     monthlyCoupon: monthlyCoupon,
     totalCoupon: totalCoupon,
     shares: shares,
-    shareValue: shareValue,
     finalValue: finalValue,
     lastClose: lastClose,
     fcnAmount: fcnAmount,
     couponRate: couponRate,
-    start: start,
-    end: end,
-    isStrikeScenario: isStrikeScenario,
-    monthlyData: Array.from({ length: totalMonths }, (_, i) => {
-      const monthNum = i + 1;
-      const isAfterKO = koTriggered && monthNum > triggeredMonth;
-      const isEarned = monthNum <= earnedMonths;
-      const monthCoupon = (isEarned && !isAfterKO) ? monthlyCoupon : 0;
-      
-      let cumCoupon = 0;
-      for (let j = 0; j <= i; j++) {
-        const jMonth = j + 1;
-        if (jMonth <= earnedMonths && !(koTriggered && jMonth > triggeredMonth)) {
-          cumCoupon += monthlyCoupon;
-        }
-      }
-      
-      let koCumReceipt = 0;
-      if (koTriggered && monthNum >= triggeredMonth) {
-        koCumReceipt = fcnAmount + cumCoupon;
-      }
-      
-      // ★★★ 修改：Strike 情境下，無 KO 到期累積收款 = 累積配息 + 換股價值 ★★★
-      let noKoCumReceipt = cumCoupon;
-      if (isStrikeScenario) {
-        // Strike 情境：顯示「累積配息 + 換股價值」
-        if (monthNum === totalMonths) {
-          noKoCumReceipt = shareValue + totalCoupon;
-        } else {
-          // 非到期月：僅顯示累積配息（因為換股要到到期才發生）
-          noKoCumReceipt = cumCoupon;
-        }
-      } else {
-        // 非 Strike 情境：維持原有邏輯
-        if (monthNum === totalMonths && !koTriggered) {
-          noKoCumReceipt = fcnAmount + totalCoupon;
-        } else if (koTriggered && monthNum === triggeredMonth) {
-          noKoCumReceipt = fcnAmount + cumCoupon;
-        }
-      }
-      
-      let kiCumCoupon = cumCoupon;
-      
-      return {
-        month: monthNum,
-        monthlyCoupon: monthCoupon,
-        cumCoupon: cumCoupon,
-        koCumReceipt: koCumReceipt,
-        noKoCumReceipt: noKoCumReceipt,
-        kiCumCoupon: kiCumCoupon,
-        isAfterKO: isAfterKO
-      };
-    })
+    labels: labels,
+    closes: closes
   };
 }
 
@@ -1223,123 +1246,319 @@ function makeDisplayLine(status, pctStr) {
   return `Normal : ${pctStr}`;
 }
 
-// ★★★ 繪製累積配息收益明細表 ★★★
-function drawCouponDetailChart(canvasId, monthlyData, fcnAmount, totalMonths, status) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  
-  const filteredData = monthlyData.filter(d => !d.isAfterKO);
-  const labels = filteredData.map(d => `第${d.month}月`);
-  const cumCoupons = filteredData.map(d => d.cumCoupon);
-  const koCumReceipts = filteredData.map(d => d.koCumReceipt);
-  const noKoCumReceipts = filteredData.map(d => d.noKoCumReceipt);
-  const kiCumCoupons = filteredData.map(d => d.kiCumCoupon);
-  
-  if (filteredData.length === 0) return;
-  
-  let statusColor = '#10b981';
-  if (status === 'KO') statusColor = '#3b82f6';
-  else if (status === 'Strike') statusColor = '#f59e0b';
-  
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: '累積配息',
-          data: cumCoupons,
-          type: 'bar',
-          backgroundColor: 'rgba(16,185,129,0.6)',
-          borderColor: 'rgba(16,185,129,0.9)',
-          borderWidth: 1,
-          order: 3,
-          yAxisID: 'y',
-        },
-        {
-          label: 'KO 情境累積收款',
-          data: koCumReceipts,
-          type: 'line',
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59,130,246,0.1)',
-          pointBackgroundColor: '#3b82f6',
-          pointRadius: 3,
-          borderWidth: 2,
-          fill: true,
-          tension: 0.2,
-          order: 1,
-          yAxisID: 'y1',
-        },
-        {
-          label: '無 KO 到期累積收款',
-          data: noKoCumReceipts,
-          type: 'line',
-          borderColor: '#f59e0b',
-          backgroundColor: 'rgba(245,158,11,0.1)',
-          pointBackgroundColor: '#f59e0b',
-          pointRadius: 3,
-          borderWidth: 2,
-          fill: true,
-          tension: 0.2,
-          order: 2,
-          yAxisID: 'y1',
-        },
-        {
-          label: 'KI 情境累積配息',
-          data: kiCumCoupons,
-          type: 'line',
-          borderColor: '#ef4444',
-          backgroundColor: 'rgba(239,68,68,0.1)',
-          pointBackgroundColor: '#ef4444',
-          pointRadius: 3,
-          borderWidth: 2,
-          fill: true,
-          tension: 0.2,
-          order: 0,
-          yAxisID: 'y1',
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          position: 'top',
-          labels: { font: { size: 10 }, boxWidth: 12, padding: 6 }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
-              let val = context.parsed.y;
-              return `${label}：${formatCurrency(val)}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { maxRotation: 30, autoSkip: true, font: { size: 9 } }
-        },
-        y: {
-          position: 'left',
-          ticks: { callback: v => formatCurrency(v), font: { size: 9 } },
-          grid: { color: 'rgba(0,0,0,0.05)' },
-          title: { display: true, text: '累積配息', font: { size: 10 } }
-        },
-        y1: {
-          position: 'right',
-          ticks: { callback: v => formatCurrency(v), font: { size: 9 } },
-          grid: { drawOnChartArea: false },
-          title: { display: true, text: '累積收款/配息', font: { size: 10 } }
-        }
-      }
+// ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★
+// ★★★ 導出 CSV 功能 ★★★
+// ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★
+function exportCSV() {
+    saveSettings(false);
+    
+    const settings = collectSettings();
+    if (!settings.clients || settings.clients.length === 0) {
+        alert('沒有資料可以導出。請先新增客戶與群組。');
+        return;
     }
-  });
+    
+    const headers = [
+        '客戶名稱',
+        '群組名稱',
+        '股票代碼',
+        '購入價格',
+        '股數',
+        '本金 (FCN)',
+        'Coupon (%)',
+        '起始日期',
+        '結束日期',
+        'KO (%)',
+        'KI (%)',
+        'Strike (%)',
+        '狀態'
+    ];
+    
+    const rows = [];
+    
+    for (const client of settings.clients) {
+        const clientName = client.clientName || '未命名';
+        for (const group of client.groups) {
+            const groupName = group.groupName || '未命名';
+            if (group.stocks && group.stocks.length > 0) {
+                for (const stock of group.stocks) {
+                    rows.push([
+                        clientName,
+                        groupName,
+                        stock.code || '',
+                        stock.buy || 0,
+                        stock.shares || 1,
+                        group.fcnAmount || 0,
+                        group.couponRate || group.aprRate || 0,
+                        group.start || '',
+                        group.end || '',
+                        group.koValue || 105,
+                        group.kiValue || 65,
+                        group.strikeValue || 75,
+                        group.status || 'Normal'
+                    ]);
+                }
+            } else {
+                rows.push([
+                    clientName,
+                    groupName,
+                    '',
+                    '',
+                    '',
+                    group.fcnAmount || 0,
+                    group.couponRate || group.aprRate || 0,
+                    group.start || '',
+                    group.end || '',
+                    group.koValue || 105,
+                    group.kiValue || 65,
+                    group.strikeValue || 75,
+                    group.status || 'Normal'
+                ]);
+            }
+        }
+    }
+    
+    let csvContent = headers.join(',') + '\n';
+    
+    for (const row of rows) {
+        const escapedRow = row.map(cell => {
+            if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
+                return `"${cell.replace(/"/g, '""')}"`;
+            }
+            return cell;
+        });
+        csvContent += escapedRow.join(',') + '\n';
+    }
+    
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `FCN_設定資料_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
+
+// ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★
+// ★★★ 導入 CSV 功能 ★★★
+// ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★
+function importCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const csvText = e.target.result;
+            // 移除 BOM
+            const cleanText = csvText.replace(/^\uFEFF/, '');
+            const lines = cleanText.split('\n').filter(line => line.trim() !== '');
+            
+            if (lines.length < 2) {
+                alert('CSV 檔案格式錯誤：沒有資料列。');
+                return;
+            }
+            
+            // 解析標題
+            const headerLine = lines[0];
+            const headers = parseCSVLine(headerLine);
+            
+            // 檢查必要的欄位
+            const requiredFields = ['客戶名稱', '群組名稱', '股票代碼', '購入價格', '股數', '本金 (FCN)', 'Coupon (%)', '起始日期', '結束日期', 'KO (%)', 'KI (%)', 'Strike (%)'];
+            const missingFields = requiredFields.filter(f => !headers.includes(f));
+            if (missingFields.length > 0) {
+                alert(`CSV 檔案缺少必要欄位：${missingFields.join(', ')}`);
+                return;
+            }
+            
+            // 建立索引對應
+            const idxClient = headers.indexOf('客戶名稱');
+            const idxGroup = headers.indexOf('群組名稱');
+            const idxCode = headers.indexOf('股票代碼');
+            const idxBuy = headers.indexOf('購入價格');
+            const idxShares = headers.indexOf('股數');
+            const idxFcn = headers.indexOf('本金 (FCN)');
+            const idxCoupon = headers.indexOf('Coupon (%)');
+            const idxStart = headers.indexOf('起始日期');
+            const idxEnd = headers.indexOf('結束日期');
+            const idxKO = headers.indexOf('KO (%)');
+            const idxKI = headers.indexOf('KI (%)');
+            const idxStrike = headers.indexOf('Strike (%)');
+            const idxStatus = headers.indexOf('狀態');
+            
+            // 解析資料列
+            const dataRows = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length === 0) continue;
+                // 確保陣列長度足夠
+                while (values.length < headers.length) {
+                    values.push('');
+                }
+                dataRows.push(values);
+            }
+            
+            if (dataRows.length === 0) {
+                alert('CSV 檔案沒有有效資料。');
+                return;
+            }
+            
+            // 確認是否覆蓋現有資料
+            const existingData = collectSettings();
+            if (existingData.clients && existingData.clients.length > 0) {
+                if (!confirm('導入 CSV 將會覆蓋目前所有的客戶、群組與股票資料。確定要繼續嗎？')) {
+                    return;
+                }
+            }
+            
+            // 重新建構資料結構
+            const newClients = [];
+            const clientMap = {}; // 用於合併同一客戶的多個群組
+            
+            for (const row of dataRows) {
+                const clientName = row[idxClient]?.trim() || '未命名客戶';
+                const groupName = row[idxGroup]?.trim() || '未命名群組';
+                const code = row[idxCode]?.trim().toUpperCase() || '';
+                const buy = parseFloat(row[idxBuy]) || 0;
+                const shares = parseInt(row[idxShares]) || 1;
+                const fcnAmount = parseFloat(row[idxFcn]) || 0;
+                const couponRate = parseFloat(row[idxCoupon]) || 0;
+                const start = row[idxStart]?.trim() || '';
+                const end = row[idxEnd]?.trim() || '';
+                const koValue = parseFloat(row[idxKO]) || 105;
+                const kiValue = parseFloat(row[idxKI]) || 65;
+                const strikeValue = parseFloat(row[idxStrike]) || 75;
+                const status = row[idxStatus]?.trim() || 'Normal';
+                
+                // 確保客戶存在
+                if (!clientMap[clientName]) {
+                    clientMap[clientName] = {
+                        clientId: `client_${Object.keys(clientMap).length + 1}`,
+                        clientName: clientName,
+                        groups: {}
+                    };
+                }
+                
+                // 確保群組存在
+                if (!clientMap[clientName].groups[groupName]) {
+                    clientMap[clientName].groups[groupName] = {
+                        groupName: groupName,
+                        fcnAmount: fcnAmount,
+                        aprRate: couponRate,
+                        couponRate: couponRate,
+                        koValue: koValue,
+                        kiValue: kiValue,
+                        strikeValue: strikeValue,
+                        useDates: !!(start && end),
+                        start: start,
+                        end: end,
+                        status: status,
+                        stocks: []
+                    };
+                } else {
+                    // 如果群組已存在，更新群組參數（取最後一筆的值）
+                    const g = clientMap[clientName].groups[groupName];
+                    if (fcnAmount) g.fcnAmount = fcnAmount;
+                    if (couponRate) { g.couponRate = couponRate; g.aprRate = couponRate; }
+                    if (koValue) g.koValue = koValue;
+                    if (kiValue) g.kiValue = kiValue;
+                    if (strikeValue) g.strikeValue = strikeValue;
+                    if (start && end) { g.useDates = true; g.start = start; g.end = end; }
+                    if (status) g.status = status;
+                }
+                
+                // 如果有股票代碼，加入該群組的股票列表
+                if (code) {
+                    clientMap[clientName].groups[groupName].stocks.push({
+                        code: code,
+                        buy: buy,
+                        shares: shares
+                    });
+                }
+            }
+            
+            // 轉換為 collectSettings 格式
+            for (const [clientName, clientData] of Object.entries(clientMap)) {
+                const groups = Object.values(clientData.groups);
+                newClients.push({
+                    clientId: clientData.clientId,
+                    clientName: clientName,
+                    groups: groups.map(g => ({
+                        groupId: `group_${Math.random().toString(36).substr(2, 6)}`,
+                        groupName: g.groupName,
+                        fcnAmount: g.fcnAmount,
+                        aprRate: g.aprRate,
+                        koValue: g.koValue,
+                        kiValue: g.kiValue,
+                        strikeValue: g.strikeValue,
+                        couponRate: g.couponRate,
+                        dayCount: '365',
+                        initialPrice: 0,
+                        worstSymbol: '',
+                        useDates: g.useDates,
+                        start: g.start,
+                        end: g.end,
+                        stocks: g.stocks,
+                        status: g.status
+                    }))
+                });
+            }
+            
+            // 儲存到 localStorage
+            const settingsData = { clients: newClients };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsData));
+            
+            // 重新載入頁面
+            alert(`✅ 成功導入 ${dataRows.length} 筆資料，共 ${Object.keys(clientMap).length} 個客戶。`);
+            
+            // 重置 file input
+            document.getElementById('csvFileInput').value = '';
+            
+            // 重新載入設定與畫面
+            loadSettings();
+            document.getElementById('output').innerHTML = '<div class="card">✅ CSV 已導入完成！請點擊「抓取並顯示」按鈕更新數據。</div>';
+            
+        } catch(err) {
+            alert('導入 CSV 失敗：' + err.message);
+            console.error(err);
+            document.getElementById('csvFileInput').value = '';
+        }
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
+// ★★★ 解析 CSV 行（處理引號內的逗號） ★★★
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            if (inQuotes && line[i+1] === '"') {
+                // 兩個引號表示一個引號字元
+                current += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current.trim());
+    return result;
+}
+
+// ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★ ★★★
 
 async function loadAll() {
   const output = document.getElementById('output');
@@ -1440,9 +1659,7 @@ async function loadAll() {
           couponRate: g.couponRate || g.aprRate || 0,
           status: groupStatus,
           stocks: groupResults,
-          contract: contractResult,
-          start: g.start,
-          end: g.end
+          contract: contractResult
         });
 
         if (g.fcnAmount > 0) {
@@ -1477,12 +1694,14 @@ async function loadAll() {
 
     let colorIdx = 0;
     for (const [client, groups] of Object.entries(clientGroups)) {
+      // ===== 收集該客戶的最終價值資料 =====
       const finalValueData = groups.map(g => ({
         label: g.groupName,
         value: g.contract.finalValue,
         status: g.status
       }));
 
+      // ===== 收集該客戶的 FCN 名義本金資料 =====
       const fcnData = groups.map(g => ({
         label: g.groupName,
         value: g.fcnAmount,
@@ -1495,10 +1714,6 @@ async function loadAll() {
       // ===== 各群組卡片 =====
       for (const g of groups) {
         const c = g.contract;
-        const startFormatted = formatDate(g.start);
-        const endFormatted = formatDate(g.end);
-        const contractPeriod = (startFormatted && endFormatted) ? `${startFormatted} ~ ${endFormatted}` : '未設定';
-        
         html += `
           <div style="background:#fafbff;border-radius:12px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
@@ -1508,9 +1723,6 @@ async function loadAll() {
                 <span class="tag-apr">Coupon：${Number(g.couponRate).toFixed(1)}%</span>
                 ${getStatusBadge(g.status)}
               </span>
-            </div>
-            <div style="margin-bottom:8px;">
-              <span class="contract-period"><strong>📅 合約期限：</strong>${contractPeriod}</span>
             </div>
             <div class="stocks">
               ${g.stocks.map(x => {
@@ -1538,7 +1750,6 @@ async function loadAll() {
                 <span><strong>累積月數：</strong>${c.months} / ${c.totalMonths}</span>
                 <span><strong>總配息：</strong>${formatCurrency(c.totalCoupon)}</span>
                 ${c.shares > 0 ? `<span><strong>換股數：</strong>${c.shares.toFixed(4)}</span>` : ''}
-                ${c.isStrikeScenario ? `<span><strong>換股價值：</strong>${formatCurrency(c.shareValue)}</span>` : ''}
                 <span style="font-weight:800;color:#4f46e5;"><strong>最終價值：</strong>${formatCurrency(c.finalValue)}</span>
               </div>
               <div style="font-size:12px;color:#475569;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">
@@ -1547,58 +1758,6 @@ async function loadAll() {
                 ${c.kiDate ? `｜KI 日期：${c.kiDate}` : ''}
               </div>
             </div>
-            
-            <!-- ★★★ 累積配息收益明細表 ★★★ -->
-            ${c.monthlyData && c.monthlyData.length > 0 ? `
-            <div class="coupon-chart-container">
-              <div class="chart-title">📊 累積配息收益明細表（${g.groupName}）</div>
-              <div style="overflow-x:auto;margin-top:6px;">
-                <table class="coupon-detail-table">
-                  <thead>
-                    <tr>
-                      <th>月份</th>
-                      <th>累積配息</th>
-                      <th>KO 情境累積收款</th>
-                      <th>無 KO 到期累積收款</th>
-                      <th>KI 情境累積配息</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${c.monthlyData.map(d => {
-                      const isAfterKO = d.isAfterKO || false;
-                      return `
-                        <tr class="${isAfterKO ? 'ko-ended' : ''}">
-                          <td>第${d.month}月</td>
-                          <td>${isAfterKO ? '-' : formatCurrency(d.cumCoupon)}</td>
-                          <td>${isAfterKO ? '-' : (d.koCumReceipt > 0 ? formatCurrency(d.koCumReceipt) : '-')}</td>
-                          <td>${isAfterKO ? '-' : formatCurrency(d.noKoCumReceipt)}</td>
-                          <td>${isAfterKO ? '-' : formatCurrency(d.kiCumCoupon)}</td>
-                        </tr>
-                      `;
-                    }).join('')}
-                    <tr class="total-row">
-                      <td><strong>合計</strong></td>
-                      <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
-                      <td><strong>${c.koTriggered ? formatCurrency(c.fcnAmount + c.totalCoupon) : '-'}</strong></td>
-                      <td><strong>${c.isStrikeScenario ? formatCurrency(c.shareValue + c.totalCoupon) : formatCurrency(c.fcnAmount + c.totalCoupon)}</strong></td>
-                      <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="chart-wrap" style="height:280px;margin-top:8px;">
-                <canvas id="couponChart_${g.groupId}"></canvas>
-              </div>
-              <div style="font-size:11px;color:#6b7280;margin-top:4px;">
-                <span>● <span style="color:#10b981;">累積配息</span></span>
-                <span>● <span style="color:#3b82f6;">KO 情境累積收款</span></span>
-                <span>● <span style="color:#f59e0b;">無 KO 到期累積收款</span></span>
-                <span>● <span style="color:#ef4444;">KI 情境累積配息</span></span>
-                ${c.koTriggered ? `<span style="margin-left:8px;">⛔ KO 提前出場，之後月份不顯示</span>` : ''}
-                ${c.isStrikeScenario ? `<span style="margin-left:8px;">🔄 Strike 換股情境，黃線顯示換股價值</span>` : ''}
-              </div>
-            </div>
-            ` : ''}
           </div>
         `;
 
@@ -1615,7 +1774,59 @@ async function loadAll() {
         }
       }
 
-      // ===== FCN 名義本金佔比 =====
+      // ===== ★★★ 最終價值總資產圓餅圖 ★★★ =====
+      const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
+      const clientId = document.querySelector(`.client-card .client-name[value="${client}"]`)?.closest('.client-card')?.dataset.clientId || client.replace(/\s/g, '_');
+      
+      if (finalValueData.length > 1) {
+        const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+        const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
+        html += `
+          <div class="final-value-pie-card">
+            <div class="pie-header">
+              <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+              <div>
+                <button class="pie-toggle-btn" onclick="toggleFinalValuePie('${clientId}', true)">展開</button>
+                <button class="pie-toggle-btn" onclick="toggleFinalValuePie('${clientId}', false)">收合</button>
+              </div>
+            </div>
+            <div class="pie-body">
+              <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
+              <div class="chart-wrap" style="height:260px;">
+                <canvas id="${pieId}"></canvas>
+              </div>
+              <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
+                ${finalValueData.map((d, i) => `
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
+                    <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
+                    ${d.label}：${formatCurrency(d.value)} (${d.status})
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (finalValueData.length === 1) {
+        html += `
+          <div class="final-value-pie-card">
+            <div class="pie-header">
+              <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+              <div>
+                <button class="pie-toggle-btn" onclick="toggleFinalValuePie('${clientId}', true)">展開</button>
+                <button class="pie-toggle-btn" onclick="toggleFinalValuePie('${clientId}', false)">收合</button>
+              </div>
+            </div>
+            <div class="pie-body">
+              <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
+              <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
+                ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // ===== ★★★ FCN 名義本金圓餅圖 ★★★ =====
       const totalFcn = fcnData.reduce((sum, d) => sum + d.value, 0);
       if (fcnData.length > 1) {
         const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
@@ -1644,39 +1855,6 @@ async function loadAll() {
             <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
             <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
               ${fcnData[0].label}：${formatCurrency(fcnData[0].value)} (${fcnData[0].status})
-            </div>
-          </div>
-        `;
-      }
-
-      // ===== 最終價值總資產 =====
-      const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
-      if (finalValueData.length > 1) {
-        const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
-        const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
-        html += `
-          <div class="final-value-pie-card">
-            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
-            <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
-            <div class="chart-wrap" style="height:260px;">
-              <canvas id="${pieId}"></canvas>
-            </div>
-            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
-              ${finalValueData.map((d, i) => `
-                <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
-                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
-                  ${d.label}：${formatCurrency(d.value)} (${d.status})
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      } else if (finalValueData.length === 1) {
-        html += `
-          <div class="final-value-pie-card">
-            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
-            <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
-              ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
             </div>
           </div>
         `;
@@ -1839,19 +2017,6 @@ async function loadAll() {
         }
       }
     }, 500);
-
-    // ===== 繪製累積配息收益明細表圖表 =====
-    setTimeout(() => {
-      for (const [client, groups] of Object.entries(clientGroups)) {
-        for (const g of groups) {
-          const c = g.contract;
-          if (c.monthlyData && c.monthlyData.length > 0) {
-            const canvasId = `couponChart_${g.groupId}`;
-            drawCouponDetailChart(canvasId, c.monthlyData, c.fcnAmount, c.totalMonths, c.status);
-          }
-        }
-      }
-    }, 600);
 
     // ===== 股票點擊事件 =====
     document.querySelectorAll('.stock-card').forEach(el => {
