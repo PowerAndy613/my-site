@@ -292,6 +292,28 @@
     }
     .result-detail strong {color:#0f172a}
 
+    /* 最終價值總資產圓餅圖卡片 */
+    .final-value-pie-card {
+      margin-top:12px;
+      padding-top:12px;
+      border-top:2px solid #4f46e5;
+    }
+    .final-value-pie-card .pie-title {
+      font-weight:700;
+      font-size:15px;
+      margin-bottom:6px;
+      color:#1f2937;
+    }
+    .final-value-pie-card .total-asset {
+      font-size:14px;
+      color:#4b5563;
+      margin-bottom:8px;
+    }
+    .final-value-pie-card .total-asset strong {
+      color:#4f46e5;
+      font-size:16px;
+    }
+
     @media (max-width:760px){
       body{padding-bottom:84px}
       .grid,.group-limits,.group-head{grid-template-columns:1fr}
@@ -332,6 +354,7 @@
         min-height:32px !important;
       }
       .chart-wrap{height:220px}
+      .final-value-pie-card .pie-title {font-size:13px}
     }
     @media (min-width:760px){
       body{padding:14px;padding-bottom:14px}
@@ -1196,9 +1219,17 @@ async function loadAll() {
 
     let colorIdx = 0;
     for (const [client, groups] of Object.entries(clientGroups)) {
+      // ===== 收集該客戶的最終價值資料（用於圓餅圖） =====
+      const finalValueData = groups.map(g => ({
+        label: g.groupName,
+        value: g.contract.finalValue,
+        status: g.status
+      }));
+
       html += `<div class="card" style="border-left:4px solid #4f46e5;">`;
       html += `<div class="section-title">👤 ${client}</div>`;
 
+      // ===== 各群組卡片 =====
       for (const g of groups) {
         const c = g.contract;
         html += `
@@ -1261,7 +1292,40 @@ async function loadAll() {
         }
       }
 
-      // ===== FCN 圓餅圖（依客戶分開） =====
+      // ===== ★★★ 新增：最終價值總資產圓餅圖 ★★★ =====
+      const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
+      if (finalValueData.length > 1) {
+        const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+        const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
+        html += `
+          <div class="final-value-pie-card">
+            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+            <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
+            <div class="chart-wrap" style="height:260px;">
+              <canvas id="${pieId}"></canvas>
+            </div>
+            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
+              ${finalValueData.map((d, i) => `
+                <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
+                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
+                  ${d.label}：${formatCurrency(d.value)} (${d.status})
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (finalValueData.length === 1) {
+        html += `
+          <div class="final-value-pie-card">
+            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+            <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
+              ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
+            </div>
+          </div>
+        `;
+      }
+
+      // ===== FCN 名義本金圓餅圖 =====
       const clientFcnData = fcnPieDataByClient[client] || [];
       if (clientFcnData.length > 1) {
         const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
@@ -1360,7 +1424,7 @@ async function loadAll() {
       }, 300);
     }
 
-    // ===== 繪製 FCN 圓餅圖 =====
+    // ===== 繪製 FCN 名義本金圓餅圖 =====
     setTimeout(() => {
       const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
       for (const [client, data] of Object.entries(fcnPieDataByClient)) {
@@ -1399,6 +1463,51 @@ async function loadAll() {
         }
       }
     }, 400);
+
+    // ===== ★★★ 繪製最終價值總資產圓餅圖 ★★★ =====
+    setTimeout(() => {
+      const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+      for (const [client, groups] of Object.entries(clientGroups)) {
+        const finalValueData = groups.map(g => ({
+          label: g.groupName,
+          value: g.contract.finalValue,
+          status: g.status
+        }));
+        if (finalValueData.length > 1) {
+          const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
+          const ctx = document.getElementById(pieId)?.getContext('2d');
+          if (!ctx) continue;
+          const total = finalValueData.reduce((a, b) => a + b.value, 0);
+          new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: finalValueData.map(d => `${d.label} (${d.status})`),
+              datasets: [{
+                data: finalValueData.map(d => d.value),
+                backgroundColor: finalValueData.map((_, i) => fvColors[i % fvColors.length]),
+                borderWidth: 2,
+                borderColor: '#fff',
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'right', labels: { font: { size: 11 }, padding: 8, boxWidth: 14 } },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      const percentage = ((context.parsed / total) * 100).toFixed(1);
+                      return `${context.label}：${formatCurrency(context.parsed)} (${percentage}%)`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
+    }, 500);
 
     // ===== 股票點擊事件 =====
     document.querySelectorAll('.stock-card').forEach(el => {
