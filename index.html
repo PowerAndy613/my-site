@@ -311,7 +311,6 @@
       font-size:16px;
     }
 
-    /* FCN 名義本金圓餅圖 - 新增總金額顯示 */
     .fcn-pie-card .total-fcn {
       font-size:14px;
       color:#4b5563;
@@ -320,6 +319,46 @@
     .fcn-pie-card .total-fcn strong {
       color:#f59e0b;
       font-size:16px;
+    }
+
+    /* ★★★ 累積配息收益明細表 ★★★ */
+    .coupon-detail-table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+      margin-top:8px;
+    }
+    .coupon-detail-table th {
+      background:#f1f5f9;
+      color:#1e293b;
+      font-weight:700;
+      padding:6px 8px;
+      text-align:center;
+      border:1px solid #e2e8f0;
+    }
+    .coupon-detail-table td {
+      padding:5px 8px;
+      text-align:center;
+      border:1px solid #e2e8f0;
+      font-variant-numeric:tabular-nums;
+    }
+    .coupon-detail-table tr:nth-child(even) td {
+      background:#f8fafc;
+    }
+    .coupon-detail-table .total-row td {
+      background:#e2e8f0;
+      font-weight:700;
+    }
+    .coupon-chart-container {
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid #e5e7eb;
+    }
+    .coupon-chart-container .chart-title {
+      font-weight:700;
+      font-size:13px;
+      color:#1f2937;
+      margin-bottom:4px;
     }
 
     @media (max-width:760px){
@@ -364,6 +403,8 @@
       .chart-wrap{height:220px}
       .final-value-pie-card .pie-title {font-size:13px}
       .fcn-pie-card .pie-title {font-size:13px}
+      .coupon-detail-table {font-size:11px}
+      .coupon-detail-table th,.coupon-detail-table td {padding:3px 4px}
     }
     @media (min-width:760px){
       body{padding:14px;padding-bottom:14px}
@@ -1058,7 +1099,34 @@ function calculateFCNContract(groupData, stockResults) {
     finalValue: finalValue,
     lastClose: lastClose,
     fcnAmount: fcnAmount,
-    couponRate: couponRate
+    couponRate: couponRate,
+    monthlyData: Array.from({ length: totalMonths }, (_, i) => {
+      const monthNum = i + 1;
+      const isEarned = monthNum <= earnedMonths;
+      const monthCoupon = isEarned ? monthlyCoupon : 0;
+      let cumCoupon = 0;
+      for (let j = 0; j <= i; j++) {
+        if (j < earnedMonths) cumCoupon += monthlyCoupon;
+      }
+      let koCumReceipt = 0;
+      if (koTriggered && monthNum >= triggeredMonth) {
+        koCumReceipt = fcnAmount + cumCoupon;
+      }
+      let noKoCumReceipt = cumCoupon;
+      if (monthNum === totalMonths) {
+        noKoCumReceipt = fcnAmount + totalCoupon;
+      }
+      let kiCumCoupon = cumCoupon;
+      
+      return {
+        month: monthNum,
+        monthlyCoupon: monthCoupon,
+        cumCoupon: cumCoupon,
+        koCumReceipt: koCumReceipt,
+        noKoCumReceipt: noKoCumReceipt,
+        kiCumCoupon: kiCumCoupon
+      };
+    })
   };
 }
 
@@ -1082,6 +1150,123 @@ function makeDisplayLine(status, pctStr) {
   if (status === 'KI') return `KI : ${pctStr} ⚠️`;
   if (status === 'Strike') return `Strike : ${pctStr} 🔄`;
   return `Normal : ${pctStr}`;
+}
+
+// ★★★ 繪製累積配息收益明細表（複合圖表：長條圖 + 折線圖）★★★
+function drawCouponDetailChart(canvasId, monthlyData, fcnAmount, totalMonths, status) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const labels = monthlyData.map(d => `第${d.month}月`);
+  // ★★★ 直條圖改為累積配息 ★★★
+  const cumCoupons = monthlyData.map(d => d.cumCoupon);
+  const koCumReceipts = monthlyData.map(d => d.koCumReceipt);
+  const noKoCumReceipts = monthlyData.map(d => d.noKoCumReceipt);
+  const kiCumCoupons = monthlyData.map(d => d.kiCumCoupon);
+  
+  let statusColor = '#10b981';
+  if (status === 'KO') statusColor = '#3b82f6';
+  else if (status === 'Strike') statusColor = '#f59e0b';
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          // ★★★ 改為累積配息 ★★★
+          label: '累積配息',
+          data: cumCoupons,
+          type: 'bar',
+          backgroundColor: 'rgba(16,185,129,0.6)',
+          borderColor: 'rgba(16,185,129,0.9)',
+          borderWidth: 1,
+          order: 3,
+          yAxisID: 'y',
+        },
+        {
+          label: 'KO 情境累積收款',
+          data: koCumReceipts,
+          type: 'line',
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.1)',
+          pointBackgroundColor: '#3b82f6',
+          pointRadius: 3,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.2,
+          order: 1,
+          yAxisID: 'y1',
+        },
+        {
+          label: '無 KO 到期累積收款',
+          data: noKoCumReceipts,
+          type: 'line',
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          pointBackgroundColor: '#f59e0b',
+          pointRadius: 3,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.2,
+          order: 2,
+          yAxisID: 'y1',
+        },
+        {
+          label: 'KI 情境累積配息',
+          data: kiCumCoupons,
+          type: 'line',
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.1)',
+          pointBackgroundColor: '#ef4444',
+          pointRadius: 3,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.2,
+          order: 0,
+          yAxisID: 'y1',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { size: 10 }, boxWidth: 12, padding: 6 }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              let val = context.parsed.y;
+              return `${label}：${formatCurrency(val)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { maxRotation: 30, autoSkip: true, font: { size: 9 } }
+        },
+        y: {
+          position: 'left',
+          ticks: { callback: v => formatCurrency(v), font: { size: 9 } },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          title: { display: true, text: '累積配息', font: { size: 10 } }
+        },
+        y1: {
+          position: 'right',
+          ticks: { callback: v => formatCurrency(v), font: { size: 9 } },
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: '累積收款/配息', font: { size: 10 } }
+        }
+      }
+    }
+  });
 }
 
 async function loadAll() {
@@ -1282,6 +1467,53 @@ async function loadAll() {
                 ${c.kiDate ? `｜KI 日期：${c.kiDate}` : ''}
               </div>
             </div>
+            
+            <!-- ★★★ 累積配息收益明細表（放在群組卡片內） ★★★ -->
+            ${c.monthlyData && c.monthlyData.length > 0 ? `
+            <div class="coupon-chart-container">
+              <div class="chart-title">📊 累積配息收益明細表（${g.groupName}）</div>
+              <div style="overflow-x:auto;margin-top:6px;">
+                <table class="coupon-detail-table">
+                  <thead>
+                    <tr>
+                      <th>月份</th>
+                      <th>累積配息</th>
+                      <th>KO 情境累積收款</th>
+                      <th>無 KO 到期累積收款</th>
+                      <th>KI 情境累積配息</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${c.monthlyData.map(d => `
+                      <tr>
+                        <td>第${d.month}月</td>
+                        <td>${formatCurrency(d.cumCoupon)}</td>
+                        <td>${d.koCumReceipt > 0 ? formatCurrency(d.koCumReceipt) : '-'}</td>
+                        <td>${formatCurrency(d.noKoCumReceipt)}</td>
+                        <td>${formatCurrency(d.kiCumCoupon)}</td>
+                      </tr>
+                    `).join('')}
+                    <tr class="total-row">
+                      <td><strong>合計</strong></td>
+                      <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
+                      <td><strong>${c.koTriggered ? formatCurrency(c.fcnAmount + c.totalCoupon) : '-'}</strong></td>
+                      <td><strong>${formatCurrency(c.fcnAmount + c.totalCoupon)}</strong></td>
+                      <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="chart-wrap" style="height:280px;margin-top:8px;">
+                <canvas id="couponChart_${g.groupId}"></canvas>
+              </div>
+              <div style="font-size:11px;color:#6b7280;margin-top:4px;">
+                <span>● <span style="color:#10b981;">累積配息</span></span>
+                <span>● <span style="color:#3b82f6;">KO 情境累積收款</span></span>
+                <span>● <span style="color:#f59e0b;">無 KO 到期累積收款</span></span>
+                <span>● <span style="color:#ef4444;">KI 情境累積配息</span></span>
+              </div>
+            </div>
+            ` : ''}
           </div>
         `;
 
@@ -1298,40 +1530,7 @@ async function loadAll() {
         }
       }
 
-      // ===== ★★★ 最終價值總資產圓餅圖 ★★★ =====
-      const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
-      if (finalValueData.length > 1) {
-        const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
-        const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
-        html += `
-          <div class="final-value-pie-card">
-            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
-            <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
-            <div class="chart-wrap" style="height:260px;">
-              <canvas id="${pieId}"></canvas>
-            </div>
-            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
-              ${finalValueData.map((d, i) => `
-                <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
-                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
-                  ${d.label}：${formatCurrency(d.value)} (${d.status})
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      } else if (finalValueData.length === 1) {
-        html += `
-          <div class="final-value-pie-card">
-            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
-            <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
-              ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
-            </div>
-          </div>
-        `;
-      }
-
-      // ===== ★★★ FCN 名義本金圓餅圖（新增總金額顯示） ★★★ =====
+      // ===== ★★★ FCN 名義本金佔比 ★★★ =====
       const totalFcn = fcnData.reduce((sum, d) => sum + d.value, 0);
       if (fcnData.length > 1) {
         const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
@@ -1360,6 +1559,39 @@ async function loadAll() {
             <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
             <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
               ${fcnData[0].label}：${formatCurrency(fcnData[0].value)} (${fcnData[0].status})
+            </div>
+          </div>
+        `;
+      }
+
+      // ===== ★★★ 最終價值總資產 ★★★ =====
+      const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
+      if (finalValueData.length > 1) {
+        const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+        const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
+        html += `
+          <div class="final-value-pie-card">
+            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+            <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
+            <div class="chart-wrap" style="height:260px;">
+              <canvas id="${pieId}"></canvas>
+            </div>
+            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
+              ${finalValueData.map((d, i) => `
+                <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
+                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
+                  ${d.label}：${formatCurrency(d.value)} (${d.status})
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (finalValueData.length === 1) {
+        html += `
+          <div class="final-value-pie-card">
+            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+            <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
+              ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
             </div>
           </div>
         `;
@@ -1522,6 +1754,19 @@ async function loadAll() {
         }
       }
     }, 500);
+
+    // ===== ★★★ 繪製累積配息收益明細表圖表 ★★★ =====
+    setTimeout(() => {
+      for (const [client, groups] of Object.entries(clientGroups)) {
+        for (const g of groups) {
+          const c = g.contract;
+          if (c.monthlyData && c.monthlyData.length > 0) {
+            const canvasId = `couponChart_${g.groupId}`;
+            drawCouponDetailChart(canvasId, c.monthlyData, c.fcnAmount, c.totalMonths, c.status);
+          }
+        }
+      }
+    }, 600);
 
     // ===== 股票點擊事件 =====
     document.querySelectorAll('.stock-card').forEach(el => {
