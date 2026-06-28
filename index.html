@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>投資人FCN儀表板 - 完整合約邏輯</title>
+  <title>投資人FCN儀表板</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -50,7 +50,6 @@
     .success{background:#10b981;color:#fff}
     .outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.3)}
 
-    /* 客戶層級卡片 */
     .client-card{
       border:2px solid #4f46e5;
       border-radius:18px;
@@ -105,7 +104,6 @@
     .client-body{padding:10px}
     .client-body .group-list{margin-top:6px}
 
-    /* 群組卡片（子層） */
     details.group-card{
       border:1px solid #d9deea;
       border-radius:14px;
@@ -292,7 +290,6 @@
     }
     .result-detail strong {color:#0f172a}
 
-    /* 最終價值總資產圓餅圖卡片 */
     .final-value-pie-card {
       margin-top:12px;
       padding-top:12px;
@@ -311,6 +308,17 @@
     }
     .final-value-pie-card .total-asset strong {
       color:#4f46e5;
+      font-size:16px;
+    }
+
+    /* FCN 名義本金圓餅圖 - 新增總金額顯示 */
+    .fcn-pie-card .total-fcn {
+      font-size:14px;
+      color:#4b5563;
+      margin-bottom:8px;
+    }
+    .fcn-pie-card .total-fcn strong {
+      color:#f59e0b;
       font-size:16px;
     }
 
@@ -355,6 +363,7 @@
       }
       .chart-wrap{height:220px}
       .final-value-pie-card .pie-title {font-size:13px}
+      .fcn-pie-card .pie-title {font-size:13px}
     }
     @media (min-width:760px){
       body{padding:14px;padding-bottom:14px}
@@ -370,7 +379,7 @@
 <body>
 
 <!-- ===== 標題 ===== -->
-<h1>📊 投資人FCN儀表板 - 完整合約邏輯</h1>
+<h1>📊 投資人FCN儀表板</h1>
 
 <div class="card">
   <div class="section-title">📋 客戶與群組管理</div>
@@ -617,25 +626,17 @@ function collapseAllClients() {
   document.querySelectorAll('details.group-card').forEach(d => d.open = false);
 }
 
-// ★★★ 修正後的單一客戶展開函數 ★★★
 function expandClientGroups(clientId) {
     const clientEl = document.querySelector(`[data-client-id="${clientId}"]`);
     if (!clientEl) return;
-
-    // 1. 強制顯示該客戶的群組容器 (解決收合全部後無法展開的問題)
     const body = document.getElementById(`clientBody_${clientId}`);
     if (body) body.style.display = '';
-
-    // 2. 展開該客戶下的所有群組
     clientEl.querySelectorAll('details.group-card').forEach(d => d.open = true);
 }
 
-// ★★★ 修正後的單一客戶收合函數 ★★★
 function collapseClientGroups(clientId) {
     const clientEl = document.querySelector(`[data-client-id="${clientId}"]`);
     if (!clientEl) return;
-
-    // 只收合群組，但「不隱藏」客戶區塊，方便使用者再次展開
     clientEl.querySelectorAll('details.group-card').forEach(d => d.open = false);
 }
 
@@ -945,10 +946,8 @@ function calculateFCNContract(groupData, stockResults) {
   const daysDiff = Math.max(0, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
   const totalMonths = Math.max(1, Math.floor(daysDiff / 30));
   
-  // 每月配息 = 名義本金 × 年化配息率 × (30 / 年基準天數)
   const monthlyCoupon = fcnAmount * (couponRate / 100) * (30 / Number(dayCount));
   
-  // 找出最差標的
   let worstStockCode = worstSymbol;
   if (!worstStockCode && stockResults.length > 0) {
     let maxLoss = Infinity;
@@ -1219,10 +1218,17 @@ async function loadAll() {
 
     let colorIdx = 0;
     for (const [client, groups] of Object.entries(clientGroups)) {
-      // ===== 收集該客戶的最終價值資料（用於圓餅圖） =====
+      // ===== 收集該客戶的最終價值資料 =====
       const finalValueData = groups.map(g => ({
         label: g.groupName,
         value: g.contract.finalValue,
+        status: g.status
+      }));
+
+      // ===== 收集該客戶的 FCN 名義本金資料 =====
+      const fcnData = groups.map(g => ({
+        label: g.groupName,
+        value: g.fcnAmount,
         status: g.status
       }));
 
@@ -1292,7 +1298,7 @@ async function loadAll() {
         }
       }
 
-      // ===== ★★★ 新增：最終價值總資產圓餅圖 ★★★ =====
+      // ===== ★★★ 最終價值總資產圓餅圖 ★★★ =====
       const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
       if (finalValueData.length > 1) {
         const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
@@ -1325,19 +1331,20 @@ async function loadAll() {
         `;
       }
 
-      // ===== FCN 名義本金圓餅圖 =====
-      const clientFcnData = fcnPieDataByClient[client] || [];
-      if (clientFcnData.length > 1) {
+      // ===== ★★★ FCN 名義本金圓餅圖（新增總金額顯示） ★★★ =====
+      const totalFcn = fcnData.reduce((sum, d) => sum + d.value, 0);
+      if (fcnData.length > 1) {
         const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
         const pieId = `fcnPie_${client.replace(/\s/g, '_')}`;
         html += `
           <div class="fcn-pie-card">
             <div class="pie-title">🥧 ${client} - FCN 名義本金佔比</div>
+            <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
             <div class="chart-wrap" style="height:260px;">
               <canvas id="${pieId}"></canvas>
             </div>
             <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
-              ${clientFcnData.map((d, i) => `
+              ${fcnData.map((d, i) => `
                 <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
                   <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fcnColors[i % fcnColors.length]};"></span>
                   ${d.label}：${formatCurrency(d.value)} (${d.status})
@@ -1346,16 +1353,18 @@ async function loadAll() {
             </div>
           </div>
         `;
-      } else if (clientFcnData.length === 1) {
+      } else if (fcnData.length === 1) {
         html += `
           <div class="fcn-pie-card">
             <div class="pie-title">🥧 ${client} - FCN 名義本金</div>
+            <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
             <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
-              ${clientFcnData[0].label}：${formatCurrency(clientFcnData[0].value)} (${clientFcnData[0].status})
+              ${fcnData[0].label}：${formatCurrency(fcnData[0].value)} (${fcnData[0].status})
             </div>
           </div>
         `;
       }
+
       html += `</div>`;
     }
 
@@ -1424,22 +1433,27 @@ async function loadAll() {
       }, 300);
     }
 
-    // ===== 繪製 FCN 名義本金圓餅圖 =====
+    // ===== ★★★ 繪製最終價值總資產圓餅圖 ★★★ =====
     setTimeout(() => {
-      const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
-      for (const [client, data] of Object.entries(fcnPieDataByClient)) {
-        if (data.length > 1) {
-          const pieId = `fcnPie_${client.replace(/\s/g, '_')}`;
+      const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+      for (const [client, groups] of Object.entries(clientGroups)) {
+        const finalValueData = groups.map(g => ({
+          label: g.groupName,
+          value: g.contract.finalValue,
+          status: g.status
+        }));
+        if (finalValueData.length > 1) {
+          const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
           const ctx = document.getElementById(pieId)?.getContext('2d');
           if (!ctx) continue;
-          const total = data.reduce((a, b) => a + b.value, 0);
+          const total = finalValueData.reduce((a, b) => a + b.value, 0);
           new Chart(ctx, {
             type: 'pie',
             data: {
-              labels: data.map(d => `${d.label} (${d.status})`),
+              labels: finalValueData.map(d => `${d.label} (${d.status})`),
               datasets: [{
-                data: data.map(d => d.value),
-                backgroundColor: data.map((_, i) => fcnColors[i % fcnColors.length]),
+                data: finalValueData.map(d => d.value),
+                backgroundColor: finalValueData.map((_, i) => fvColors[i % fvColors.length]),
                 borderWidth: 2,
                 borderColor: '#fff',
               }]
@@ -1464,27 +1478,27 @@ async function loadAll() {
       }
     }, 400);
 
-    // ===== ★★★ 繪製最終價值總資產圓餅圖 ★★★ =====
+    // ===== ★★★ 繪製 FCN 名義本金圓餅圖 ★★★ =====
     setTimeout(() => {
-      const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+      const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
       for (const [client, groups] of Object.entries(clientGroups)) {
-        const finalValueData = groups.map(g => ({
+        const fcnData = groups.map(g => ({
           label: g.groupName,
-          value: g.contract.finalValue,
+          value: g.fcnAmount,
           status: g.status
         }));
-        if (finalValueData.length > 1) {
-          const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
+        if (fcnData.length > 1) {
+          const pieId = `fcnPie_${client.replace(/\s/g, '_')}`;
           const ctx = document.getElementById(pieId)?.getContext('2d');
           if (!ctx) continue;
-          const total = finalValueData.reduce((a, b) => a + b.value, 0);
+          const total = fcnData.reduce((a, b) => a + b.value, 0);
           new Chart(ctx, {
             type: 'pie',
             data: {
-              labels: finalValueData.map(d => `${d.label} (${d.status})`),
+              labels: fcnData.map(d => `${d.label} (${d.status})`),
               datasets: [{
-                data: finalValueData.map(d => d.value),
-                backgroundColor: finalValueData.map((_, i) => fvColors[i % fvColors.length]),
+                data: fcnData.map(d => d.value),
+                backgroundColor: fcnData.map((_, i) => fcnColors[i % fcnColors.length]),
                 borderWidth: 2,
                 borderColor: '#fff',
               }]
