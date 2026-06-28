@@ -240,6 +240,19 @@
     .tag-status.strike{background:#f59e0b;color:#fff}
     .tag-status.normal{background:#10b981;color:#fff}
 
+    .contract-period {
+      font-size:13px;
+      color:#475569;
+      background:#f1f5f9;
+      padding:4px 12px;
+      border-radius:8px;
+      margin-top:2px;
+      display:inline-block;
+    }
+    .contract-period strong {
+      color:#1e293b;
+    }
+
     .modal{
       display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);padding:12px;box-sizing:border-box
     }
@@ -321,7 +334,6 @@
       font-size:16px;
     }
 
-    /* ★★★ 累積配息收益明細表 ★★★ */
     .coupon-detail-table {
       width:100%;
       border-collapse:collapse;
@@ -348,6 +360,15 @@
     .coupon-detail-table .total-row td {
       background:#e2e8f0;
       font-weight:700;
+    }
+    .coupon-detail-table .ko-ended td {
+      background:#fef2f2 !important;
+      color:#9ca3af;
+    }
+    .coupon-detail-table .ko-ended td:first-child::after {
+      content: " ⛔ 已提前出場";
+      font-size:10px;
+      color:#ef4444;
     }
     .coupon-chart-container {
       margin-top:10px;
@@ -405,6 +426,11 @@
       .fcn-pie-card .pie-title {font-size:13px}
       .coupon-detail-table {font-size:11px}
       .coupon-detail-table th,.coupon-detail-table td {padding:3px 4px}
+      .contract-period {font-size:11px;padding:2px 8px}
+      .coupon-detail-table .ko-ended td:first-child::after {
+        content: " ⛔";
+        font-size:9px;
+      }
     }
     @media (min-width:760px){
       body{padding:14px;padding-bottom:14px}
@@ -496,6 +522,13 @@ function formatNumber(num, decimals=2) {
   return parts[1] !== undefined ? `${intPart}.${parts[1]}` : intPart;
 }
 function formatCurrency(val){ return formatNumber(val, 2); }
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return `${parts[0]}/${parts[1]}/${parts[2]}`;
+}
 
 // ========== API 設定 ==========
 const PROXY_API_BASE = 'https://yfin-proxy.onrender.com/history/';
@@ -1079,6 +1112,9 @@ function calculateFCNContract(groupData, stockResults) {
     statusDetail = `✅ 合約正常到期，拿回本金 ${formatCurrency(fcnAmount)} + 配息 ${formatCurrency(totalCoupon)}`;
   }
   
+  // ★★★ 修改：KO 提前出場時，明細表只計算到 KO 當月 ★★★
+  const displayMonths = koTriggered ? triggeredMonth : totalMonths;
+  
   return {
     status: status,
     statusDetail: statusDetail,
@@ -1093,6 +1129,7 @@ function calculateFCNContract(groupData, stockResults) {
     worstSymbol: worstStockCode,
     months: earnedMonths,
     totalMonths: totalMonths,
+    triggeredMonth: triggeredMonth,
     monthlyCoupon: monthlyCoupon,
     totalCoupon: totalCoupon,
     shares: shares,
@@ -1100,22 +1137,41 @@ function calculateFCNContract(groupData, stockResults) {
     lastClose: lastClose,
     fcnAmount: fcnAmount,
     couponRate: couponRate,
+    start: start,
+    end: end,
     monthlyData: Array.from({ length: totalMonths }, (_, i) => {
       const monthNum = i + 1;
+      // ★★★ 判斷該月是否在 KO 之後（KO 後的月份不顯示數據） ★★★
+      const isAfterKO = koTriggered && monthNum > triggeredMonth;
+      // 該月是否有配息（只有 earnedMonths 內且有配息）
       const isEarned = monthNum <= earnedMonths;
-      const monthCoupon = isEarned ? monthlyCoupon : 0;
+      const monthCoupon = (isEarned && !isAfterKO) ? monthlyCoupon : 0;
+      
+      // 計算累積配息（只累積到 earnedMonths，且不超過 KO 月份）
       let cumCoupon = 0;
       for (let j = 0; j <= i; j++) {
-        if (j < earnedMonths) cumCoupon += monthlyCoupon;
+        const jMonth = j + 1;
+        if (jMonth <= earnedMonths && !(koTriggered && jMonth > triggeredMonth)) {
+          cumCoupon += monthlyCoupon;
+        }
       }
+      
+      // KO 情境累積收款：若 KO 在該月或之前發生，則為本金 + 累積配息
       let koCumReceipt = 0;
       if (koTriggered && monthNum >= triggeredMonth) {
         koCumReceipt = fcnAmount + cumCoupon;
       }
+      
+      // 無 KO 到期累積收款：最後一個月為本金 + 全部配息
       let noKoCumReceipt = cumCoupon;
-      if (monthNum === totalMonths) {
+      if (monthNum === totalMonths && !koTriggered) {
         noKoCumReceipt = fcnAmount + totalCoupon;
+      } else if (koTriggered && monthNum === triggeredMonth) {
+        // KO 當月顯示本金 + 累積配息（與 KO 情境相同）
+        noKoCumReceipt = fcnAmount + cumCoupon;
       }
+      
+      // KI 情境累積配息：與累積配息相同
       let kiCumCoupon = cumCoupon;
       
       return {
@@ -1124,7 +1180,8 @@ function calculateFCNContract(groupData, stockResults) {
         cumCoupon: cumCoupon,
         koCumReceipt: koCumReceipt,
         noKoCumReceipt: noKoCumReceipt,
-        kiCumCoupon: kiCumCoupon
+        kiCumCoupon: kiCumCoupon,
+        isAfterKO: isAfterKO  // ★★★ 標記是否在 KO 之後 ★★★
       };
     })
   };
@@ -1152,18 +1209,21 @@ function makeDisplayLine(status, pctStr) {
   return `Normal : ${pctStr}`;
 }
 
-// ★★★ 繪製累積配息收益明細表（複合圖表：長條圖 + 折線圖）★★★
+// ★★★ 繪製累積配息收益明細表（KO 後數據不顯示） ★★★
 function drawCouponDetailChart(canvasId, monthlyData, fcnAmount, totalMonths, status) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   
-  const labels = monthlyData.map(d => `第${d.month}月`);
-  // ★★★ 直條圖改為累積配息 ★★★
-  const cumCoupons = monthlyData.map(d => d.cumCoupon);
-  const koCumReceipts = monthlyData.map(d => d.koCumReceipt);
-  const noKoCumReceipts = monthlyData.map(d => d.noKoCumReceipt);
-  const kiCumCoupons = monthlyData.map(d => d.kiCumCoupon);
+  // ★★★ 過濾掉 KO 之後的月份（isAfterKO = true） ★★★
+  const filteredData = monthlyData.filter(d => !d.isAfterKO);
+  const labels = filteredData.map(d => `第${d.month}月`);
+  const cumCoupons = filteredData.map(d => d.cumCoupon);
+  const koCumReceipts = filteredData.map(d => d.koCumReceipt);
+  const noKoCumReceipts = filteredData.map(d => d.noKoCumReceipt);
+  const kiCumCoupons = filteredData.map(d => d.kiCumCoupon);
+  
+  if (filteredData.length === 0) return;
   
   let statusColor = '#10b981';
   if (status === 'KO') statusColor = '#3b82f6';
@@ -1175,7 +1235,6 @@ function drawCouponDetailChart(canvasId, monthlyData, fcnAmount, totalMonths, st
       labels: labels,
       datasets: [
         {
-          // ★★★ 改為累積配息 ★★★
           label: '累積配息',
           data: cumCoupons,
           type: 'bar',
@@ -1368,7 +1427,9 @@ async function loadAll() {
           couponRate: g.couponRate || g.aprRate || 0,
           status: groupStatus,
           stocks: groupResults,
-          contract: contractResult
+          contract: contractResult,
+          start: g.start,
+          end: g.end
         });
 
         if (g.fcnAmount > 0) {
@@ -1403,14 +1464,12 @@ async function loadAll() {
 
     let colorIdx = 0;
     for (const [client, groups] of Object.entries(clientGroups)) {
-      // ===== 收集該客戶的最終價值資料 =====
       const finalValueData = groups.map(g => ({
         label: g.groupName,
         value: g.contract.finalValue,
         status: g.status
       }));
 
-      // ===== 收集該客戶的 FCN 名義本金資料 =====
       const fcnData = groups.map(g => ({
         label: g.groupName,
         value: g.fcnAmount,
@@ -1423,6 +1482,10 @@ async function loadAll() {
       // ===== 各群組卡片 =====
       for (const g of groups) {
         const c = g.contract;
+        const startFormatted = formatDate(g.start);
+        const endFormatted = formatDate(g.end);
+        const contractPeriod = (startFormatted && endFormatted) ? `${startFormatted} ~ ${endFormatted}` : '未設定';
+        
         html += `
           <div style="background:#fafbff;border-radius:12px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
@@ -1432,6 +1495,9 @@ async function loadAll() {
                 <span class="tag-apr">Coupon：${Number(g.couponRate).toFixed(1)}%</span>
                 ${getStatusBadge(g.status)}
               </span>
+            </div>
+            <div style="margin-bottom:8px;">
+              <span class="contract-period"><strong>📅 合約期限：</strong>${contractPeriod}</span>
             </div>
             <div class="stocks">
               ${g.stocks.map(x => {
@@ -1468,7 +1534,7 @@ async function loadAll() {
               </div>
             </div>
             
-            <!-- ★★★ 累積配息收益明細表（放在群組卡片內） ★★★ -->
+            <!-- ★★★ 累積配息收益明細表 ★★★ -->
             ${c.monthlyData && c.monthlyData.length > 0 ? `
             <div class="coupon-chart-container">
               <div class="chart-title">📊 累積配息收益明細表（${g.groupName}）</div>
@@ -1484,15 +1550,19 @@ async function loadAll() {
                     </tr>
                   </thead>
                   <tbody>
-                    ${c.monthlyData.map(d => `
-                      <tr>
-                        <td>第${d.month}月</td>
-                        <td>${formatCurrency(d.cumCoupon)}</td>
-                        <td>${d.koCumReceipt > 0 ? formatCurrency(d.koCumReceipt) : '-'}</td>
-                        <td>${formatCurrency(d.noKoCumReceipt)}</td>
-                        <td>${formatCurrency(d.kiCumCoupon)}</td>
-                      </tr>
-                    `).join('')}
+                    ${c.monthlyData.map(d => {
+                      // ★★★ KO 後的月份顯示「-」 ★★★
+                      const isAfterKO = d.isAfterKO || false;
+                      return `
+                        <tr class="${isAfterKO ? 'ko-ended' : ''}">
+                          <td>第${d.month}月</td>
+                          <td>${isAfterKO ? '-' : formatCurrency(d.cumCoupon)}</td>
+                          <td>${isAfterKO ? '-' : (d.koCumReceipt > 0 ? formatCurrency(d.koCumReceipt) : '-')}</td>
+                          <td>${isAfterKO ? '-' : formatCurrency(d.noKoCumReceipt)}</td>
+                          <td>${isAfterKO ? '-' : formatCurrency(d.kiCumCoupon)}</td>
+                        </tr>
+                      `;
+                    }).join('')}
                     <tr class="total-row">
                       <td><strong>合計</strong></td>
                       <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
@@ -1511,6 +1581,7 @@ async function loadAll() {
                 <span>● <span style="color:#3b82f6;">KO 情境累積收款</span></span>
                 <span>● <span style="color:#f59e0b;">無 KO 到期累積收款</span></span>
                 <span>● <span style="color:#ef4444;">KI 情境累積配息</span></span>
+                ${c.koTriggered ? `<span style="margin-left:8px;">⛔ KO 提前出場，之後月份不顯示</span>` : ''}
               </div>
             </div>
             ` : ''}
@@ -1530,7 +1601,7 @@ async function loadAll() {
         }
       }
 
-      // ===== ★★★ FCN 名義本金佔比 ★★★ =====
+      // ===== FCN 名義本金佔比 =====
       const totalFcn = fcnData.reduce((sum, d) => sum + d.value, 0);
       if (fcnData.length > 1) {
         const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
@@ -1564,7 +1635,7 @@ async function loadAll() {
         `;
       }
 
-      // ===== ★★★ 最終價值總資產 ★★★ =====
+      // ===== 最終價值總資產 =====
       const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
       if (finalValueData.length > 1) {
         const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
@@ -1665,7 +1736,7 @@ async function loadAll() {
       }, 300);
     }
 
-    // ===== ★★★ 繪製最終價值總資產圓餅圖 ★★★ =====
+    // ===== 繪製最終價值總資產圓餅圖 =====
     setTimeout(() => {
       const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
       for (const [client, groups] of Object.entries(clientGroups)) {
@@ -1710,7 +1781,7 @@ async function loadAll() {
       }
     }, 400);
 
-    // ===== ★★★ 繪製 FCN 名義本金圓餅圖 ★★★ =====
+    // ===== 繪製 FCN 名義本金圓餅圖 =====
     setTimeout(() => {
       const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
       for (const [client, groups] of Object.entries(clientGroups)) {
@@ -1755,7 +1826,7 @@ async function loadAll() {
       }
     }, 500);
 
-    // ===== ★★★ 繪製累積配息收益明細表圖表 ★★★ =====
+    // ===== 繪製累積配息收益明細表圖表 =====
     setTimeout(() => {
       for (const [client, groups] of Object.entries(clientGroups)) {
         for (const g of groups) {
