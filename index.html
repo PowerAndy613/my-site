@@ -401,6 +401,17 @@
       background:#7c3aed;
     }
 
+    /* 日期標籤樣式 */
+    .tag-date {
+      font-size:12px;
+      font-weight:600;
+      background:#e0e7ff;
+      color:#4338ca;
+      padding:1px 10px;
+      border-radius:16px;
+      white-space:nowrap;
+    }
+
     @media (max-width:760px){
       body{padding-bottom:84px}
       .grid,.group-limits,.group-head{grid-template-columns:1fr}
@@ -610,7 +621,6 @@ function buildClientHTML(clientId, seq, data={}) {
         </div>
         <!-- ★★★ 客戶總表（圖表區）- 放在 group-list 下方 ★★★ -->
         <div class="client-charts-section" id="clientCharts_${clientId}">
-          <div style="font-weight:800;font-size:14px;color:#1f2937;margin-bottom:8px;">📊 客戶總表（群組 / 最終價值 / FCN 本金）</div>
           <div class="charts-content" id="clientChartsContent_${clientId}">
             <!-- 圖表將由 JavaScript 動態生成 -->
           </div>
@@ -1748,6 +1758,8 @@ async function loadAll() {
           groupId: g.groupId,
           fcnAmount: g.fcnAmount || 0,
           couponRate: g.couponRate || g.aprRate || 0,
+          start: g.start,
+          end: g.end,
           status: groupStatus,
           stocks: groupResults,
           contract: contractResult
@@ -1805,6 +1817,14 @@ async function loadAll() {
       // ===== 各群組卡片 =====
       for (const g of groups) {
         const c = g.contract;
+        
+        // 格式化日期顯示
+        const startDate = g.start || '未設定';
+        const endDate = g.end || '未設定';
+        const dateRangeText = (startDate !== '未設定' && endDate !== '未設定') 
+          ? `${startDate} ～ ${endDate}` 
+          : '未設定日期區間';
+        
         html += `
           <div style="background:#fafbff;border-radius:12px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
@@ -1812,6 +1832,7 @@ async function loadAll() {
               <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
                 <span class="tag-fcn">本金：${formatCurrency(g.fcnAmount)}</span>
                 <span class="tag-apr">Coupon：${Number(g.couponRate).toFixed(1)}%</span>
+                <span class="tag-date">📅 ${dateRangeText}</span>
                 ${getStatusBadge(g.status)}
               </span>
             </div>
@@ -1837,6 +1858,7 @@ async function loadAll() {
                 <span><strong>Strike 價：</strong>${formatCurrency(c.strikePrice)}</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:13px;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">
+                <span><strong>合約期間：</strong>${dateRangeText}</span>
                 <span><strong>每月配息：</strong>${formatCurrency(c.monthlyCoupon)}</span>
                 <span><strong>累積月數：</strong>${c.months} / ${c.totalMonths}</span>
                 <span><strong>總配息：</strong>${formatCurrency(c.totalCoupon)}</span>
