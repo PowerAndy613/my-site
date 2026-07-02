@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>📊 投資人FCN儀表板</title>
+  <title>🔐 投資人FCN儀表板 · 登入</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -141,7 +141,7 @@
     .group-body{padding:10px}
     .group-head{
       display:grid;
-      grid-template-columns:1fr 1fr 1fr 80px;
+      grid-template-columns:1fr 1fr 1fr 1fr 80px;
       gap:6px;
       align-items:end;
       margin-bottom:8px
@@ -243,6 +243,7 @@
     .tag-status.ki{background:#ef4444;color:#fff}
     .tag-status.strike{background:#f59e0b;color:#fff}
     .tag-status.normal{background:#10b981;color:#fff}
+    .tag-product-id{font-size:12px;font-weight:700;background:#f3e8ff;color:#6b21a8;padding:1px 10px;border-radius:16px;white-space:nowrap}
 
     .modal{
       display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);padding:12px;box-sizing:border-box
@@ -400,6 +401,56 @@
     .btn-import-csv:hover {
       background:#7c3aed;
     }
+    
+    .btn-Expand-details-of-earnings {
+      background:#93c5fd;
+      color:#111;
+      border:0;
+      font-weight:800;
+      cursor:pointer;
+      min-height:42px;
+      border-radius:12px;
+      padding:10px;
+    }
+    .btn-Expand-details-of-earnings:hover {
+      background:#93c5fd;
+    }
+    
+    .btn-Collapse-details-of-earnings {
+      background:#fde68a;
+      color:#111;
+      border:0;
+      font-weight:800;
+      cursor:pointer;
+      min-height:42px;
+      border-radius:12px;
+      padding:10px;
+    }
+    
+    .btn-Collapse-details-of-earnings:hover {
+      background:#fde68a;
+    }
+
+		.mobile-top-nav {
+		  position: fixed;
+		  top: 0;
+		  left: 0;
+		  width: 100%;
+		  display: flex;
+		  flex-wrap: wrap;              /* 超過寬度就換行 */
+		  justify-content: space-around;
+		  background-color: #f8f9fa;
+		  border-bottom: 1px solid #ccc;
+		  padding: 10px 0;
+		}
+		.mobile-top-nav a {
+		  flex: 1 0 16%;                /* 每個按鍵佔 16% 寬度 */
+		  text-align: center;
+		  text-decoration: none;
+		  color: #333;
+		  padding: 8px 0;
+		}
+
 
     /* 日期標籤樣式 */
     .tag-date {
@@ -412,9 +463,104 @@
       white-space:nowrap;
     }
 
+    /* 產品清單彈窗樣式 */
+    .product-list-modal .modal-dialog {
+      max-width: 700px;
+    }
+    .product-list-modal .modal-body {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .product-list-modal table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .product-list-modal th {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .product-list-modal td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .product-list-modal tr:hover td {
+      background: #f8fafc;
+    }
+    .product-list-modal .highlight {
+      background: #dbeafe;
+    }
+
+    /* 查找產品輸入對話框 */
+    .search-dialog-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99998;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .search-dialog-overlay.hidden { display: none; }
+    .search-dialog {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .search-dialog h3 {
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .search-dialog .field {
+      margin-bottom: 16px;
+    }
+    .search-dialog .field label {
+      font-weight: 700;
+      font-size: 13px;
+      color: #334155;
+    }
+    .search-dialog .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      font-size: 15px;
+    }
+    .search-dialog .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .search-dialog .actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 14px;
+      border: 0;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .search-dialog .actions .btn-primary {
+      background: #4f46e5;
+      color: #fff;
+    }
+    .search-dialog .actions .btn-secondary {
+      background: #e5e7eb;
+      color: #111;
+    }
+
     @media (max-width:760px){
       body{padding-bottom:84px}
       .grid,.group-limits,.group-head{grid-template-columns:1fr}
+      .group-head{grid-template-columns:1fr 1fr}
+      .group-head > div:last-child{grid-column:1/3}
       .stock-row{grid-template-columns:1fr 1fr .9fr 60px}
       .client-header{flex-direction:column;align-items:stretch}
       .client-header .client-actions{justify-content:flex-start}
@@ -435,7 +581,7 @@
       .mobile-bottom-nav .nav-text{font-size:9px;line-height:1}
       .stocks{grid-template-columns:repeat(2, minmax(0, 1fr))}
       summary.group-summary{font-size:13px}
-      .tag-fcn,.tag-apr,.tag-status{font-size:10px;padding:1px 6px}
+      .tag-fcn,.tag-apr,.tag-status,.tag-product-id{font-size:10px;padding:1px 6px}
       .line1{font-size:13px}
       .line2{font-size:11px}
       .line-pct{font-size:12px}
@@ -460,6 +606,12 @@
         content: " ⛔";
         font-size:9px;
       }
+      .product-list-modal .modal-dialog {
+        margin: 2vh auto;
+        max-width: 95%;
+      }
+      .product-list-modal table { font-size: 12px; }
+      .product-list-modal th, .product-list-modal td { padding: 4px 6px; }
     }
     @media (min-width:760px){
       body{padding:14px;padding-bottom:14px}
@@ -470,32 +622,132 @@
       .line-pct{font-size:15px}
       .chart-wrap{height:340px}
     }
+
+    /* 登入覆蓋層 */
+    #loginOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #loginOverlay.hidden { display: none; }
+    .login-box {
+      background: #fff;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 28px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-box h2 { margin-top: 0; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; color: #1e293b; }
+    .login-box .sub { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+    .login-box .field { margin-bottom: 18px; text-align: left; }
+    .login-box .field label { display: block; font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 4px; }
+    .login-box .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      font-size: 15px;
+      background: #f8fafc;
+    }
+    .login-box .field input:focus { border-color: #4f46e5; outline: 2px solid rgba(79,70,229,0.3); }
+    .login-box .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: #4f46e5;
+      color: #fff;
+      border: 0;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 17px;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 6px;
+    }
+    .login-box .login-btn:hover { background: #4338ca; }
+    .login-box .error-msg {
+      color: #dc2626;
+      font-size: 13px;
+      background: #fef2f2;
+      padding: 8px 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+    .login-box .error-msg.show { display: block; }
+    .login-box .demo-hint {
+      font-size: 13px;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 16px;
+      margin-top: 20px;
+    }
+    .login-box .demo-hint span { background: #f1f5f9; padding: 2px 10px; border-radius: 10px; font-weight: 600; color: #0f172a; }
   </style>
 </head>
 <body>
 
-<!-- ===== 標題 ===== -->
+<!-- ========== 登入覆蓋層 ========== -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <h2>🔐 登入</h2>
+    <div class="sub">請輸入管理者帳號與密碼</div>
+    <div class="field">
+      <label><i class="fa-regular fa-user"></i> 帳號</label>
+      <input type="text" id="loginUser" placeholder="請輸入帳號" value="admin">
+    </div>
+    <div class="field">
+      <label><i class="fa-solid fa-key fa fa-width-auto" style="color: rgb(0, 0, 0);"></i> 密碼</label>
+      <input type="password" id="loginPass" placeholder="請輸入密碼" value="1234">
+    </div>
+    <button class="login-btn" onclick="handleLogin()"><i class="fa-solid fa-computer-mouse"></i> 登入</button>
+    <div class="error-msg" id="loginError">❌ 帳號或密碼錯誤，請再試一次</div>
+    <div class="demo-hint">
+      <i class="fa-solid fa-phone-volume fa-width-auto" style="color: rgb(0, 15, 255);"></i> 請向系統管理者提出使用帳號
+    </div>
+  </div>
+</div>
+
+<!-- ===== 主應用（登入後顯示） ===== -->
+<div id="appContent" style="display:none;">
+
 <h1>📊 投資人FCN儀表板</h1>
 
 <div class="card">
   <div class="section-title">📋 客戶與群組管理</div>
   <div class="group-actions">
-    <button class="secondary" onclick="expandAllClients()">展開全部</button>
-    <button class="secondary" onclick="collapseAllClients()">收合全部</button>
-    <button class="success" onclick="addClient()">＋ 客戶</button>
-    <button class="secondary" onclick="addGroupToSelectedClient()">＋ 新增群組</button>
-    <button onclick="loadAll()">抓取並顯示</button>
-    <button class="secondary" onclick="saveSettings()">儲存設定</button>
-    <button class="danger" onclick="clearSettings()">清除設定</button>
-    <button class="btn-export-csv" onclick="exportCSV()">📥 導出 CSV</button>
-    <button class="btn-import-csv" onclick="document.getElementById('csvFileInput').click()">📤 導入 CSV</button>
+    <button class="secondary" onclick="expandAllClients(); toggleAllContent('expand');"><i class="fa-solid fa-2xl fa-up-right-and-down-left-from-center" style="color: rgb(42, 110, 235);"></i> 展開客戶</button>
+    <button class="secondary" onclick="collapseAllClients(); toggleAllContent('collapse');"><i class="fa-solid fa-2xl fa-down-left-and-up-right-to-center" style="color: rgb(42, 110, 235);"></i> 收合客戶</button>
+    <button class="secondary" onclick="addClient()"><i class="fa-solid fa-user-plus fa-2xl fa-width-auto" style="color: rgb(42, 110, 235);"></i> 客戶</button>
+    <button class="secondary" onclick="exportCSV()"><i class="fa-solid fa-file-csv fa-2xl fa-width-auto" style="color: rgb(42, 110, 235);"></i> 導出</button>
+    <button class="secondary" onclick="document.getElementById('csvFileInput').click()"><i class="fa-solid fa-file-csv fa-2xl fa-width-auto" style="color: rgb(42, 110, 235);"></i> 導入</button>
     <input type="file" id="csvFileInput" class="file-input-hidden" accept=".csv" onchange="importCSV(event)">
+    <button class="secondary" onclick="addGroupToSelectedClient()"><i class="fa-solid fa-2xl fa-layer-group" style="color: rgb(42, 110, 235);"></i> 群組</button>
+  </div>
+  <div class="group-actions">
+    <button class="secondary" onclick="toggleAllContent('expand')"><i class="fa-regular fa-envelope-open fa-wag fa-2xl fa-width-auto" style="color: rgb(42, 110, 235);"></i> 展開收益表</button>
+		<button class="secondary" onclick="toggleAllContent('collapse')"><i class="fa-regular fa-envelope fa-wag fa-2xl fa-width-auto" style="color: rgb(42, 110, 235);"></i> 收合收益表</button>
+    <button class="secondary" onclick="loadAll()"> <i class="fa-solid fa-cloud-arrow-down fa-2xl fa-width-auto" style="color: rgb(42, 110, 235);"></i> 股價收益</button>
+    <button class="secondary" onclick="clearSettings()"><i class="fa-solid  fa-2xl fa-trash" style="color: rgb(42, 110, 235);"></i> 清除設定</button>
+    <button class="secondary" onclick="saveSettings()"><i class="fa-solid fa-2xl fa-floppy-disk" style="color: rgb(42, 110, 235);"></i> 儲存設定</button>
+    <button class="secondary" onclick="logout()" style="background:#e5e7eb;color:#111;"><i class="fa-solid fa-2xl fa-person-walking-arrow-right fa-2xl fa-width-auto" style="color: rgb(255, 0, 0);"></i> 登出</button>
+  </div>
+  <div class="group-actions" style="margin-top:6px;border-top:1px solid #e5e7eb;padding-top:8px;">
+    <button class="secondary" onclick="showProductList()"><i class="fa-solid fa-2xl fa-list-check" style="color: rgb(42, 110, 235);"></i> 📋 產品清單</button>
+    <button class="secondary" onclick="showSearchDialog()"><i class="fa-solid fa-2xl fa-magnifying-glass" style="color: rgb(42, 110, 235);"></i> 🔍 查找產品</button>
   </div>
   <div style="height:8px;"></div>
   <div id="clientsContainer"></div>
   <div class="small"><b>FCN 合約邏輯說明：</b>KO 提前出場（收盤價 ≥ KO 價）→ 拿回本金 + 配息；KI 敲入（收盤價 < KI 價）→ 觸發換股條件；Strike 履約價 → 到期換股計算基準。</div>
 </div>
-
+ 	
 <div id="output"></div>
 
 <!-- 圖表 Modal -->
@@ -508,6 +760,34 @@
     <div class="modal-body">
       <div class="info-line" id="modalInfo"></div>
       <div class="chart-wrap"><canvas id="modalChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 產品清單 Modal -->
+<div id="productListModal" class="modal product-list-modal" onclick="closeProductList(event)">
+  <div class="modal-dialog" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">📋 客戶持有產品清單</div>
+      <button class="modal-close" onclick="closeProductList()">關閉</button>
+    </div>
+    <div class="modal-body" id="productListBody">
+      <div style="text-align:center;color:#6b7280;padding:20px;">載入中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 查找產品對話框 -->
+<div id="searchDialog" class="search-dialog-overlay hidden" onclick="closeSearchDialog(event)">
+  <div class="search-dialog" onclick="event.stopPropagation()">
+    <h3>🔍 查找產品編號</h3>
+    <div class="field">
+      <label>請輸入產品編號</label>
+      <input type="text" id="searchProductInput" placeholder="例如：NO88888" onkeydown="if(event.key==='Enter') doSearchProduct()">
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="doSearchProduct()"><i class="fa-solid fa-magnifying-glass"></i> 查找</button>
+      <button class="btn-secondary" onclick="closeSearchDialog()">取消</button>
     </div>
   </div>
 </div>
@@ -550,9 +830,70 @@
     <span class="nav-icon"><i class="fa-solid fa-file-import"></i></span>
     <span class="nav-text">導入</span>
   </button>
+  <button onclick="showSearchDialog()">
+    <span class="nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+    <span class="nav-text">查找</span>
+  </button>
+  <button onclick="showProductList()">
+    <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+    <span class="nav-text">清單</span>
+  </button>
+  <button onclick="logout()">
+    <span class="nav-icon"><i class="fa-solid fa-person-walking-arrow-right fa-width-auto" style="color: rgb(0, 0, 0);"></i></span>
+    <span class="nav-text">登出</span>
+  </button>
 </nav>
 
+</div> <!-- end appContent -->
+
 <script>
+// ========== 登入控制 (三組管理者) ==========
+const MANAGERS = [
+  { username: 'admin', password: '1234' },
+  { username: 'manager', password: 'manager' },
+  { username: 'super', password: 'super' }
+];
+
+let isLoggedIn = false;
+
+function handleLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const errorEl = document.getElementById('loginError');
+
+  const valid = MANAGERS.some(m => m.username === user && m.password === pass);
+
+  if (valid) {
+    isLoggedIn = true;
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('appContent').style.display = 'block';
+    errorEl.classList.remove('show');
+    if (typeof init === 'function') init();
+    else {
+      loadSettings();
+      document.getElementById('output').innerHTML = '<div class="card">請輸入資料後，點擊「抓取並顯示」按鈕開始追蹤 FCN 合約。</div>';
+    }
+  } else {
+    errorEl.classList.add('show');
+    setTimeout(() => errorEl.classList.remove('show'), 4000);
+  }
+}
+
+function logout() {
+  if (confirm('確定要登出嗎？')) {
+    isLoggedIn = false;
+    document.getElementById('loginOverlay').classList.remove('hidden');
+    document.getElementById('appContent').style.display = 'none';
+    if (window.modalChart) { window.modalChart.destroy(); window.modalChart = null; }
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !isLoggedIn) {
+    handleLogin();
+  }
+});
+
 // ========== 工具函數 ==========
 function formatNumber(num, decimals=2) {
   if (num === undefined || num === null || isNaN(num)) return '0';
@@ -619,11 +960,8 @@ function buildClientHTML(clientId, seq, data={}) {
         <div class="group-actions">
           <button class="secondary" onclick="addGroupToClient('${clientId}')">＋ 新增群組 (子層)</button>
         </div>
-        <!-- ★★★ 客戶總表（圖表區）- 放在 group-list 下方 ★★★ -->
         <div class="client-charts-section" id="clientCharts_${clientId}">
-          <div class="charts-content" id="clientChartsContent_${clientId}">
-            <!-- 圖表將由 JavaScript 動態生成 -->
-          </div>
+          <div class="charts-content" id="clientChartsContent_${clientId}"></div>
         </div>
       </div>
     </div>
@@ -633,10 +971,14 @@ function buildClientHTML(clientId, seq, data={}) {
 function buildGroupHTML(groupId, clientId, seq, data={}) {
   const fcnDisplay = data.fcnAmount ? formatCurrency(data.fcnAmount) : '未設定';
   const aprDisplay = data.aprRate ? `${Number(data.aprRate).toFixed(1)}%` : '0%';
+  const productId = data.productId || 'NO88888';
   return `
-    <details class="group-card" data-group-id="${groupId}" data-client-id="${clientId}" ${data.open !== false ? 'open' : ''}>
+    <details class="group-card" data-group-id="${groupId}" data-client-id="${clientId}" data-product-id="${productId}" ${data.open !== false ? 'open' : ''}>
       <summary class="group-summary">
-        <span>📁 ${data.groupName || `群組 ${seq}`}</span>
+        <span>
+          <span class="tag-product-id">📦 ${productId}</span>
+          ${data.groupName || `群組 ${seq}`}
+        </span>
         <span style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
           <span class="tag-fcn">本金：${fcnDisplay}</span>
           <span class="tag-apr">Coupon：${aprDisplay}</span>
@@ -645,9 +987,10 @@ function buildGroupHTML(groupId, clientId, seq, data={}) {
       </summary>
       <div class="group-body">
         <div class="group-head">
-          <div><label>群組名稱</label><input type="text" class="group-name" placeholder="群組名稱"></div>
-          <div><label>FCN 名義本金 (USD)</label><input type="number" step="1" class="group-fcn" placeholder="100000"></div>
-          <div><label>年化配息率 (Coupon %)</label><input type="number" step="0.1" class="group-apr" placeholder="12"></div>
+          <div><label>產品編號</label><input type="text" class="group-product-id" placeholder="NO88888" value="${productId || ''}"></div>
+          <div><label>群組名稱</label><input type="text" class="group-name" placeholder="群組名稱" value="${data.groupName || ''}"></div>
+          <div><label>FCN 名義本金 (USD)</label><input type="number" step="1" class="group-fcn" placeholder="100000" value="${data.fcnAmount || ''}"></div>
+          <div><label>年化配息率 (Coupon %)</label><input type="number" step="0.1" class="group-apr" placeholder="12" value="${data.aprRate || ''}"></div>
           <div>
             <button class="danger btn-delete-group" 
                     onclick="event.stopPropagation(); removeGroup('${groupId}')" 
@@ -731,14 +1074,10 @@ function toggleClient(clientId) {
 
 function expandAllClients() {
   document.querySelectorAll('.client-body').forEach(el => el.style.display = '');
-  document.querySelectorAll('details.group-card').forEach(d => d.open = true);
-  document.querySelectorAll('.client-charts-section .charts-content').forEach(el => el.classList.remove('collapsed'));
 }
 
 function collapseAllClients() {
   document.querySelectorAll('.client-body').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('details.group-card').forEach(d => d.open = false);
-  document.querySelectorAll('.client-charts-section .charts-content').forEach(el => el.classList.add('collapsed'));
 }
 
 function expandClientGroups(clientId) {
@@ -805,6 +1144,7 @@ function removeGroup(groupId) {
 
 function fillGroupValues(el, data) {
   if (!el) return;
+  el.querySelector('.group-product-id').value = data?.productId || 'NO88888';
   el.querySelector('.group-name').value = data?.groupName || '';
   el.querySelector('.group-fcn').value = data?.fcnAmount || '';
   el.querySelector('.group-apr').value = data?.aprRate || '';
@@ -824,6 +1164,7 @@ function fillGroupValues(el, data) {
 
 function bindGroupEvents(el, seq) {
   if (!el) return;
+  const productIdInput = el.querySelector('.group-product-id');
   const nameInput = el.querySelector('.group-name');
   const fcnInput = el.querySelector('.group-fcn');
   const aprInput = el.querySelector('.group-apr');
@@ -837,6 +1178,7 @@ function bindGroupEvents(el, seq) {
   const endInput = el.querySelector('.group-end');
 
   const updateSummary = () => {
+    const productId = productIdInput?.value.trim() || 'NO88888';
     const name = nameInput?.value.trim() || `群組 ${seq}`;
     const fcn = fcnInput?.value.trim() ? formatCurrency(Number(fcnInput.value)) : '未設定';
     const apr = aprInput?.value.trim() ? `${Number(aprInput.value).toFixed(1)}%` : '0%';
@@ -845,7 +1187,10 @@ function bindGroupEvents(el, seq) {
     const summary = el.querySelector('.group-summary');
     if (summary) {
       summary.innerHTML = `
-        <span>📁 ${name}</span>
+        <span>
+          <span class="tag-product-id">📦 ${productId}</span>
+          ${name}
+        </span>
         <span style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
           <span class="tag-fcn">本金：${fcn}</span>
           <span class="tag-apr">Coupon：${apr}</span>
@@ -853,8 +1198,11 @@ function bindGroupEvents(el, seq) {
         </span>
       `;
     }
+    // 更新 data-product-id 屬性以便查找
+    el.dataset.productId = productId;
   };
 
+  productIdInput?.addEventListener('input', updateSummary);
   nameInput?.addEventListener('input', updateSummary);
   fcnInput?.addEventListener('input', updateSummary);
   aprInput?.addEventListener('input', updateSummary);
@@ -873,6 +1221,9 @@ function bindGroupEvents(el, seq) {
   endInput?.addEventListener('change', () => saveSettings(false));
   if (startInput) startInput.disabled = !useDates?.checked;
   if (endInput) endInput.disabled = !useDates?.checked;
+  
+  // 初始更新一次 summary
+  setTimeout(updateSummary, 50);
 }
 
 // ========== 股票操作 ==========
@@ -927,6 +1278,7 @@ function collectSettings() {
     const groups = [];
     clientEl.querySelectorAll('.group-card').forEach(groupEl => {
       const gid = groupEl.dataset.groupId;
+      const productId = groupEl.querySelector('.group-product-id')?.value.trim() || 'NO88888';
       const groupName = groupEl.querySelector('.group-name')?.value.trim() || '';
       const fcnAmount = Number(groupEl.querySelector('.group-fcn')?.value) || 0;
       const aprRate = Number(groupEl.querySelector('.group-apr')?.value) || 0;
@@ -948,7 +1300,7 @@ function collectSettings() {
         if (code && Number.isFinite(buy)) stocks.push({ code, buy, shares });
       });
       groups.push({ 
-        groupId: gid, groupName, fcnAmount, aprRate, 
+        groupId: gid, productId, groupName, fcnAmount, aprRate, 
         koValue, kiValue, strikeValue, couponRate, dayCount,
         initialPrice, worstSymbol,
         useDates, start, end, stocks 
@@ -1035,7 +1387,7 @@ function showConfirmDialog(message, callback) {
     <div style="font-size:16px; font-weight:700; margin-bottom:12px;">⚠️ 確認刪除</div>
     <div style="font-size:14px; color:#444; margin-bottom:20px; line-height:1.5;">${message}</div>
     <div style="display:flex; gap:10px;">
-      <button id="confirmCancelBtn" style="flex:1; padding:10px; border-radius:10px; border:1px solid #d9deea; background:#fff; font-weight:700; cursor:pointer;">取消</button>
+      <button id="confirmCancelBtn" style="flex:1; padding:10px; border-radius:10px; border:1; background:#6b7280; color:#fff font-weight:700; cursor:pointer;">取消</button>
       <button id="confirmOkBtn" style="flex:1; padding:10px; border-radius:10px; border:0; background:#ef4444; color:#fff; font-weight:700; cursor:pointer;">確定刪除</button>
     </div>
   `;
@@ -1048,7 +1400,113 @@ function showConfirmDialog(message, callback) {
   });
 }
 
-// ========== ★★★ FCN 合約計算核心邏輯 ★★★ ==========
+// ========== 產品編號查找功能 ==========
+function showSearchDialog() {
+  document.getElementById('searchDialog').classList.remove('hidden');
+  document.getElementById('searchProductInput').value = '';
+  document.getElementById('searchProductInput').focus();
+}
+
+function closeSearchDialog(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('searchDialog').classList.add('hidden');
+}
+
+function doSearchProduct() {
+  const input = document.getElementById('searchProductInput').value.trim();
+  if (!input) {
+    alert('請輸入產品編號');
+    return;
+  }
+  closeSearchDialog();
+  
+  // 在所有 group-card 中查找
+  const groups = document.querySelectorAll('.group-card');
+  let found = false;
+  for (const el of groups) {
+    const pid = el.dataset.productId || '';
+    if (pid === input) {
+      found = true;
+      // 展開該群組
+      el.open = true;
+      // 捲動到該群組
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // 高亮效果
+      el.style.transition = 'box-shadow 0.3s';
+      el.style.boxShadow = '0 0 0 4px #4f46e5, 0 4px 20px rgba(79,70,229,0.3)';
+      setTimeout(() => {
+        el.style.boxShadow = '';
+      }, 3000);
+      break;
+    }
+  }
+  if (!found) {
+    alert(`找不到產品編號「${input}」`);
+  }
+}
+
+// ========== 產品清單功能 ==========
+function showProductList() {
+  const modal = document.getElementById('productListModal');
+  const body = document.getElementById('productListBody');
+  modal.classList.add('show');
+  
+  // 收集所有群組的產品資訊
+  const groups = document.querySelectorAll('.group-card');
+  const list = [];
+  groups.forEach(el => {
+    const clientCard = el.closest('.client-card');
+    const clientName = clientCard?.querySelector('.client-name')?.value || '未命名客戶';
+    const productId = el.dataset.productId || 'NO88888';
+    const groupName = el.querySelector('.group-name')?.value || '未命名群組';
+    const fcn = el.querySelector('.group-fcn')?.value || '0';
+    const apr = el.querySelector('.group-apr')?.value || '0';
+    const statusEl = el.querySelector('.tag-status');
+    const status = statusEl ? statusEl.textContent : 'Normal';
+    list.push({ clientName, productId, groupName, fcn, apr, status });
+  });
+  
+  if (list.length === 0) {
+    body.innerHTML = '<div style="text-align:center;color:#6b7280;padding:20px;">目前沒有任何產品，請先新增群組。</div>';
+    return;
+  }
+  
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>客戶名稱</th>
+          <th>產品編號</th>
+          <th>群組名稱</th>
+          <th>本金 (USD)</th>
+          <th>Coupon (%)</th>
+          <th>狀態</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  list.forEach(item => {
+    html += `
+      <tr>
+        <td>${item.clientName}</td>
+        <td><strong>${item.productId}</strong></td>
+        <td>${item.groupName}</td>
+        <td>${formatCurrency(Number(item.fcn))}</td>
+        <td>${Number(item.apr).toFixed(1)}%</td>
+        <td><span class="tag-status ${item.status.toLowerCase()}">${item.status}</span></td>
+      </tr>
+    `;
+  });
+  html += '</tbody></table>';
+  body.innerHTML = html;
+}
+
+function closeProductList(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('productListModal').classList.remove('show');
+}
+
+// ========== FCN 合約計算核心邏輯 ==========
 function calculateFCNContract(groupData, stockResults) {
   const { 
     fcnAmount, couponRate, koValue, kiValue, strikeValue, 
@@ -1128,7 +1586,6 @@ function calculateFCNContract(groupData, stockResults) {
   let statusDetail = '';
   const lastClose = closes[closes.length - 1];
   
-  // ★★★ 計算換股價值 ★★★
   let shareValue = 0;
   
   if (koTriggered) {
@@ -1161,7 +1618,6 @@ function calculateFCNContract(groupData, stockResults) {
     statusDetail = `✅ 合約正常到期，拿回本金 ${formatCurrency(fcnAmount)} + 配息 ${formatCurrency(totalCoupon)}`;
   }
   
-  // 判斷是否為 Strike 換股情境
   const isStrikeScenario = (status === 'Strike');
   
   return {
@@ -1203,18 +1659,14 @@ function calculateFCNContract(groupData, stockResults) {
         koCumReceipt = fcnAmount + cumCoupon;
       }
       
-      // ★★★ 修改：Strike 情境下，無 KO 到期累積收款 = 累積配息 + 換股價值 ★★★
       let noKoCumReceipt = cumCoupon;
       if (isStrikeScenario) {
-        // Strike 情境：顯示「累積配息 + 換股價值」
         if (monthNum === totalMonths) {
           noKoCumReceipt = shareValue + totalCoupon;
         } else {
-          // 非到期月：僅顯示累積配息（因為換股要到到期才發生）
           noKoCumReceipt = cumCoupon;
         }
       } else {
-        // 非 Strike 情境：維持原有邏輯
         if (monthNum === totalMonths && !koTriggered) {
           noKoCumReceipt = fcnAmount + totalCoupon;
         } else if (koTriggered && monthNum === triggeredMonth) {
@@ -1237,7 +1689,6 @@ function calculateFCNContract(groupData, stockResults) {
   };
 }
 
-// ========== 顯示與計算 ==========
 function getCardClass(status) {
   if (status === 'KO') return 'ko';
   if (status === 'KI') return 'ki';
@@ -1259,7 +1710,6 @@ function makeDisplayLine(status, pctStr) {
   return `Normal : ${pctStr}`;
 }
 
-// ★★★ 繪製累積配息收益明細表 ★★★
 function drawCouponDetailChart(canvasId, monthlyData, fcnAmount, totalMonths, status) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
@@ -1373,7 +1823,7 @@ function drawCouponDetailChart(canvasId, monthlyData, fcnAmount, totalMonths, st
   });
 }
 
-// ★★★ 導出 CSV 功能 ★★★
+// ========== CSV 導入導出 ==========
 function exportCSV() {
     saveSettings(false);
     const settings = collectSettings();
@@ -1384,6 +1834,7 @@ function exportCSV() {
     
     const headers = [
         '客戶名稱',
+        '產品編號',
         '群組名稱',
         '股票代碼',
         '購入價格',
@@ -1403,11 +1854,13 @@ function exportCSV() {
     for (const client of settings.clients) {
         const clientName = client.clientName || '未命名';
         for (const group of client.groups) {
+            const productId = group.productId || 'NO88888';
             const groupName = group.groupName || '未命名';
             if (group.stocks && group.stocks.length > 0) {
                 for (const stock of group.stocks) {
                     rows.push([
                         clientName,
+                        productId,
                         groupName,
                         stock.code || '',
                         stock.buy || 0,
@@ -1425,6 +1878,7 @@ function exportCSV() {
             } else {
                 rows.push([
                     clientName,
+                    productId,
                     groupName,
                     '',
                     '',
@@ -1467,7 +1921,6 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-// ★★★ 導入 CSV 功能 ★★★
 function importCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1487,7 +1940,7 @@ function importCSV(event) {
             const headerLine = lines[0];
             const headers = parseCSVLine(headerLine);
             
-            const requiredFields = ['客戶名稱', '群組名稱', '股票代碼', '購入價格', '股數', '本金 (FCN)', 'Coupon (%)', '起始日期', '結束日期', 'KO (%)', 'KI (%)', 'Strike (%)'];
+            const requiredFields = ['客戶名稱', '產品編號', '群組名稱', '股票代碼', '購入價格', '股數', '本金 (FCN)', 'Coupon (%)', '起始日期', '結束日期', 'KO (%)', 'KI (%)', 'Strike (%)'];
             const missingFields = requiredFields.filter(f => !headers.includes(f));
             if (missingFields.length > 0) {
                 alert(`CSV 檔案缺少必要欄位：${missingFields.join(', ')}`);
@@ -1495,6 +1948,7 @@ function importCSV(event) {
             }
             
             const idxClient = headers.indexOf('客戶名稱');
+            const idxProduct = headers.indexOf('產品編號');
             const idxGroup = headers.indexOf('群組名稱');
             const idxCode = headers.indexOf('股票代碼');
             const idxBuy = headers.indexOf('購入價格');
@@ -1535,6 +1989,7 @@ function importCSV(event) {
             
             for (const row of dataRows) {
                 const clientName = row[idxClient]?.trim() || '未命名客戶';
+                const productId = row[idxProduct]?.trim() || 'NO88888';
                 const groupName = row[idxGroup]?.trim() || '未命名群組';
                 const code = row[idxCode]?.trim().toUpperCase() || '';
                 const buy = parseFloat(row[idxBuy]) || 0;
@@ -1548,6 +2003,7 @@ function importCSV(event) {
                 const strikeValue = parseFloat(row[idxStrike]) || 75;
                 const status = row[idxStatus]?.trim() || 'Normal';
                 
+                const key = `${clientName}|${productId}|${groupName}`;
                 if (!clientMap[clientName]) {
                     clientMap[clientName] = {
                         clientId: `client_${Object.keys(clientMap).length + 1}`,
@@ -1556,8 +2012,9 @@ function importCSV(event) {
                     };
                 }
                 
-                if (!clientMap[clientName].groups[groupName]) {
-                    clientMap[clientName].groups[groupName] = {
+                if (!clientMap[clientName].groups[key]) {
+                    clientMap[clientName].groups[key] = {
+                        productId: productId,
                         groupName: groupName,
                         fcnAmount: fcnAmount,
                         aprRate: couponRate,
@@ -1572,7 +2029,7 @@ function importCSV(event) {
                         stocks: []
                     };
                 } else {
-                    const g = clientMap[clientName].groups[groupName];
+                    const g = clientMap[clientName].groups[key];
                     if (fcnAmount) g.fcnAmount = fcnAmount;
                     if (couponRate) { g.couponRate = couponRate; g.aprRate = couponRate; }
                     if (koValue) g.koValue = koValue;
@@ -1583,7 +2040,7 @@ function importCSV(event) {
                 }
                 
                 if (code) {
-                    clientMap[clientName].groups[groupName].stocks.push({
+                    clientMap[clientName].groups[key].stocks.push({
                         code: code,
                         buy: buy,
                         shares: shares
@@ -1598,6 +2055,7 @@ function importCSV(event) {
                     clientName: clientName,
                     groups: groups.map(g => ({
                         groupId: `group_${Math.random().toString(36).substr(2, 6)}`,
+                        productId: g.productId,
                         groupName: g.groupName,
                         fcnAmount: g.fcnAmount,
                         aprRate: g.aprRate,
@@ -1661,6 +2119,54 @@ function parseCSVLine(line) {
     return result;
 }
 
+// ========== 展開/收合控制函數 ==========
+function toggleClientContent(clientId) {
+  const content = document.getElementById(`clientContent_${clientId}`);
+  if (content) {
+    const isHidden = content.style.display === 'none';
+    content.style.display = isHidden ? 'block' : 'none';
+    const icon = document.querySelector(`[onclick*="toggleClientContent('${clientId}')"] i`);
+    if (icon) {
+      icon.className = isHidden ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right';
+    }
+  }
+}
+
+function toggleGroupContent(groupId) {
+  const content = document.getElementById(`groupContent_${groupId}`);
+  if (content) {
+    const isHidden = content.style.display === 'none';
+    content.style.display = isHidden ? 'block' : 'none';
+    const icon = document.getElementById(`groupIcon_${groupId}`);
+    if (icon) {
+      icon.className = isHidden ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right';
+    }
+  }
+}
+
+function toggleChartContent(chartId) {
+  const content = document.getElementById(`chartContent_${chartId}`);
+  if (content) {
+    const isHidden = content.style.display === 'none';
+    content.style.display = isHidden ? 'block' : 'none';
+    const icon = document.getElementById(`chartIcon_${chartId}`);
+    if (icon) {
+      icon.className = isHidden ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right';
+    }
+  }
+}
+
+function toggleAllContent(action) {
+  const contents = document.querySelectorAll('[id^="clientContent_"], [id^="groupContent_"], [id^="chartContent_"]');
+  contents.forEach(el => {
+    el.style.display = action === 'expand' ? 'block' : 'none';
+  });
+  document.querySelectorAll('[id^="groupIcon_"], [id^="chartIcon_"]').forEach(icon => {
+    icon.className = action === 'expand' ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right';
+  });
+}
+
+// ========== loadAll 完整修改版 ==========
 async function loadAll() {
   const output = document.getElementById('output');
   saveSettings(false);
@@ -1754,6 +2260,7 @@ async function loadAll() {
         const groupStatus = contractResult.status;
         allGroupData.push({
           client: client.clientName,
+          productId: g.productId || 'NO88888',
           groupName: g.groupName || '未命名',
           groupId: g.groupId,
           fcnAmount: g.fcnAmount || 0,
@@ -1780,11 +2287,13 @@ async function loadAll() {
             statusTag.textContent = groupStatus;
             statusTag.className = `tag-status ${groupStatus.toLowerCase()}`;
           }
+          // 更新 data-product-id
+          groupEl.dataset.productId = g.productId || 'NO88888';
         }
       }
     }
 
-    // ===== 生成輸出 HTML =====
+    // ===== 生成輸出 HTML (含展開/收合功能) =====
     let html = '';
     const profitChartData = [];
     const profitColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
@@ -1797,14 +2306,14 @@ async function loadAll() {
 
     let colorIdx = 0;
     for (const [client, groups] of Object.entries(clientGroups)) {
-      // ===== 收集該客戶的最終價值資料 =====
+      const clientId = client.replace(/\s/g, '_');
+      
       const finalValueData = groups.map(g => ({
         label: g.groupName,
         value: g.contract.finalValue,
         status: g.status
       }));
 
-      // ===== 收集該客戶的 FCN 名義本金資料 =====
       const fcnData = groups.map(g => ({
         label: g.groupName,
         value: g.fcnAmount,
@@ -1812,13 +2321,22 @@ async function loadAll() {
       }));
 
       html += `<div class="card" style="border-left:4px solid #4f46e5;">`;
-      html += `<div class="section-title">👤 ${client}</div>`;
+      
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="section-title">👤 ${client}</div>
+          <button class="secondary" style="padding:4px 12px;min-height:30px;font-size:12px;width:auto;" 
+                  onclick="toggleClientContent('${clientId}')">
+            <i class="fa-solid fa-chevron-down"></i> 展開/收合
+          </button>
+        </div>
+        <div id="clientContent_${clientId}" style="display:block;">
+      `;
 
-      // ===== 各群組卡片 =====
       for (const g of groups) {
         const c = g.contract;
+        const groupId = g.groupId.replace(/[^a-zA-Z0-9]/g, '_');
         
-        // 格式化日期顯示
         const startDate = g.start || '未設定';
         const endDate = g.end || '未設定';
         const dateRangeText = (startDate !== '未設定' && endDate !== '未設定') 
@@ -1826,101 +2344,110 @@ async function loadAll() {
           : '未設定日期區間';
         
         html += `
-          <div style="background:#fafbff;border-radius:12px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
-              <span style="font-weight:800;font-size:15px;">📁 ${g.groupName}</span>
+          <div style="background:#fafbff;border-radius:12px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb;" data-product-id="${g.productId}">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:6px;cursor:pointer;" 
+                 onclick="toggleGroupContent('${groupId}')">
+              <span style="font-weight:800;font-size:15px;">
+                <span class="tag-product-id">📦 ${g.productId}</span>
+                ${g.groupName}
+              </span>
               <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
                 <span class="tag-fcn">本金：${formatCurrency(g.fcnAmount)}</span>
                 <span class="tag-apr">Coupon：${Number(g.couponRate).toFixed(1)}%</span>
                 <span class="tag-date">📅 ${dateRangeText}</span>
                 ${getStatusBadge(g.status)}
+                <button class="secondary" style="padding:2px 8px;min-height:24px;font-size:11px;width:auto;" 
+                        onclick="event.stopPropagation(); toggleGroupContent('${groupId}')">
+                  <i class="fa-solid fa-chevron-down" id="groupIcon_${groupId}"></i>
+                </button>
               </span>
             </div>
-            <div class="stocks">
-              ${g.stocks.map(x => {
-                const isWorst = x.code === c.worstSymbol;
-                return `
-                  <div class="stock-card ${getCardClass(g.status)}" data-stockid="${x.stockId}" style="${isWorst ? 'border-width:6px;' : ''}">
-                    <div class="line1">${x.code} ${isWorst ? '⭐' : ''}</div>
-                    <div class="line2">最新收盤：${x.closeText}</div>
-                    <div class="line2">購入價：${formatCurrency(x.buy)}</div>
-                    <div class="line-pct">${makeDisplayLine(g.status, x.pctValueText)}</div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-            <div class="result-detail">
-              <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:13px;">
-                <span><strong>最差標的：</strong>${c.worstSymbol || '自動判定'}</span>
-                <span><strong>初始價：</strong>${formatCurrency(c.initialPrice)}</span>
-                <span><strong>KO 價：</strong>${formatCurrency(c.koPrice)}</span>
-                <span><strong>KI 價：</strong>${formatCurrency(c.kiPrice)}</span>
-                <span><strong>Strike 價：</strong>${formatCurrency(c.strikePrice)}</span>
+            <div id="groupContent_${groupId}" style="display:block;">
+              <div class="stocks">
+                ${g.stocks.map(x => {
+                  const isWorst = x.code === c.worstSymbol;
+                  return `
+                    <div class="stock-card ${getCardClass(g.status)}" data-stockid="${x.stockId}" style="${isWorst ? 'border-width:6px;' : ''}">
+                      <div class="line1">${x.code} ${isWorst ? '⭐' : ''}</div>
+                      <div class="line2">最新收盤：${x.closeText}</div>
+                      <div class="line2">購入價：${formatCurrency(x.buy)}</div>
+                      <div class="line-pct">${makeDisplayLine(g.status, x.pctValueText)}</div>
+                    </div>
+                  `;
+                }).join('')}
               </div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:13px;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">
-                <span><strong>合約期間：</strong>${dateRangeText}</span>
-                <span><strong>每月配息：</strong>${formatCurrency(c.monthlyCoupon)}</span>
-                <span><strong>累積月數：</strong>${c.months} / ${c.totalMonths}</span>
-                <span><strong>總配息：</strong>${formatCurrency(c.totalCoupon)}</span>
-                ${c.shares > 0 ? `<span><strong>換股數：</strong>${c.shares.toFixed(4)}</span>` : ''}
-                ${c.isStrikeScenario ? `<span><strong>換股價值：</strong>${formatCurrency(c.shareValue)}</span>` : ''}
-                <span style="font-weight:800;color:#4f46e5;"><strong>最終價值：</strong>${formatCurrency(c.finalValue)}</span>
+              <div class="result-detail">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:13px;">
+                  <span><strong>最差標的：</strong>${c.worstSymbol || '自動判定'}</span>
+                  <span><strong>初始價：</strong>${formatCurrency(c.initialPrice)}</span>
+                  <span><strong>KO 價：</strong>${formatCurrency(c.koPrice)}</span>
+                  <span><strong>KI 價：</strong>${formatCurrency(c.kiPrice)}</span>
+                  <span><strong>Strike 價：</strong>${formatCurrency(c.strikePrice)}</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:13px;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">
+                  <span><strong>合約期間：</strong>${dateRangeText}</span>
+                  <span><strong>每月配息：</strong>${formatCurrency(c.monthlyCoupon)}</span>
+                  <span><strong>累積月數：</strong>${c.months} / ${c.totalMonths}</span>
+                  <span><strong>總配息：</strong>${formatCurrency(c.totalCoupon)}</span>
+                  ${c.shares > 0 ? `<span><strong>換股數：</strong>${c.shares.toFixed(4)}</span>` : ''}
+                  ${c.isStrikeScenario ? `<span><strong>換股價值：</strong>${formatCurrency(c.shareValue)}</span>` : ''}
+                  <span style="font-weight:800;color:#4f46e5;"><strong>最終價值：</strong>${formatCurrency(c.finalValue)}</span>
+                </div>
+                <div style="font-size:12px;color:#475569;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">
+                  ${c.statusDetail}
+                  ${c.koDate ? `｜KO 日期：${c.koDate}` : ''}
+                  ${c.kiDate ? `｜KI 日期：${c.kiDate}` : ''}
+                </div>
               </div>
-              <div style="font-size:12px;color:#475569;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">
-                ${c.statusDetail}
-                ${c.koDate ? `｜KO 日期：${c.koDate}` : ''}
-                ${c.kiDate ? `｜KI 日期：${c.kiDate}` : ''}
-              </div>
-            </div>
-            
-            <!-- ★★★ 累積配息收益明細表（放在群組卡片內） ★★★ -->
-            ${c.monthlyData && c.monthlyData.length > 0 ? `
-            <div class="coupon-chart-container">
-              <div class="chart-title">📊 累積配息收益明細表（${g.groupName}）</div>
-              <div style="overflow-x:auto;margin-top:6px;">
-                <table class="coupon-detail-table">
-                  <thead>
-                    <tr>
-                      <th>月份</th>
-                      <th>累積配息</th>
-                      <th>KO 情境累積收款</th>
-                      <th>無 KO 到期累積收款</th>
-                      <th>KI 情境累積配息</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${c.monthlyData.map(d => `
-                      <tr class="${d.isAfterKO ? 'ko-ended' : ''}">
-                        <td>第${d.month}月</td>
-                        <td>${d.isAfterKO ? '-' : formatCurrency(d.cumCoupon)}</td>
-                        <td>${d.isAfterKO ? '-' : (d.koCumReceipt > 0 ? formatCurrency(d.koCumReceipt) : '-')}</td>
-                        <td>${d.isAfterKO ? '-' : formatCurrency(d.noKoCumReceipt)}</td>
-                        <td>${d.isAfterKO ? '-' : formatCurrency(d.kiCumCoupon)}</td>
+              
+              ${c.monthlyData && c.monthlyData.length > 0 ? `
+              <div class="coupon-chart-container">
+                <div class="chart-title">📊 累積配息收益明細表（${g.groupName}）</div>
+                <div style="overflow-x:auto;margin-top:6px;">
+                  <table class="coupon-detail-table">
+                    <thead>
+                      <tr>
+                        <th>月份</th>
+                        <th>累積配息</th>
+                        <th>KO 情境累積收款</th>
+                        <th>無 KO 到期累積收款</th>
+                        <th>KI 情境累積配息</th>
                       </tr>
-                    `).join('')}
-                    <tr class="total-row">
-                      <td><strong>合計</strong></td>
-                      <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
-                      <td><strong>${c.koTriggered ? formatCurrency(c.fcnAmount + c.totalCoupon) : '-'}</strong></td>
-                      <td><strong>${c.isStrikeScenario ? formatCurrency(c.shareValue + c.totalCoupon) : formatCurrency(c.fcnAmount + c.totalCoupon)}</strong></td>
-                      <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      ${c.monthlyData.map(d => `
+                        <tr class="${d.isAfterKO ? 'ko-ended' : ''}">
+                          <td>第${d.month}月</td>
+                          <td>${d.isAfterKO ? '-' : formatCurrency(d.cumCoupon)}</td>
+                          <td>${d.isAfterKO ? '-' : (d.koCumReceipt > 0 ? formatCurrency(d.koCumReceipt) : '-')}</td>
+                          <td>${d.isAfterKO ? '-' : formatCurrency(d.noKoCumReceipt)}</td>
+                          <td>${d.isAfterKO ? '-' : formatCurrency(d.kiCumCoupon)}</td>
+                        </tr>
+                      `).join('')}
+                      <tr class="total-row">
+                        <td><strong>合計</strong></td>
+                        <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
+                        <td><strong>${c.koTriggered ? formatCurrency(c.fcnAmount + c.totalCoupon) : '-'}</strong></td>
+                        <td><strong>${c.isStrikeScenario ? formatCurrency(c.shareValue + c.totalCoupon) : formatCurrency(c.fcnAmount + c.totalCoupon)}</strong></td>
+                        <td><strong>${formatCurrency(c.totalCoupon)}</strong></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="chart-wrap" style="height:280px;margin-top:8px;">
+                  <canvas id="couponChart_${g.groupId}"></canvas>
+                </div>
+                <div style="font-size:11px;color:#6b7280;margin-top:4px;">
+                  <span>● <span style="color:#10b981;">累積配息</span></span>
+                  <span>● <span style="color:#3b82f6;">KO 情境累積收款</span></span>
+                  <span>● <span style="color:#f59e0b;">無 KO 到期累積收款</span></span>
+                  <span>● <span style="color:#ef4444;">KI 情境累積配息</span></span>
+                  ${c.koTriggered ? `<span style="margin-left:8px;">⛔ KO 提前出場，之後月份不顯示</span>` : ''}
+                  ${c.isStrikeScenario ? `<span style="margin-left:8px;">🔄 Strike 換股情境，黃線顯示換股價值</span>` : ''}
+                </div>
               </div>
-              <div class="chart-wrap" style="height:280px;margin-top:8px;">
-                <canvas id="couponChart_${g.groupId}"></canvas>
-              </div>
-              <div style="font-size:11px;color:#6b7280;margin-top:4px;">
-                <span>● <span style="color:#10b981;">累積配息</span></span>
-                <span>● <span style="color:#3b82f6;">KO 情境累積收款</span></span>
-                <span>● <span style="color:#f59e0b;">無 KO 到期累積收款</span></span>
-                <span>● <span style="color:#ef4444;">KI 情境累積配息</span></span>
-                ${c.koTriggered ? `<span style="margin-left:8px;">⛔ KO 提前出場，之後月份不顯示</span>` : ''}
-                ${c.isStrikeScenario ? `<span style="margin-left:8px;">🔄 Strike 換股情境，黃線顯示換股價值</span>` : ''}
-              </div>
+              ` : ''}
             </div>
-            ` : ''}
           </div>
         `;
 
@@ -1937,77 +2464,113 @@ async function loadAll() {
         }
       }
 
-      // ===== ★★★ FCN 名義本金佔比（放在最上面） ★★★ =====
       const totalFcn = fcnData.reduce((sum, d) => sum + d.value, 0);
       if (fcnData.length > 1) {
         const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
         const pieId = `fcnPie_${client.replace(/\s/g, '_')}`;
         html += `
           <div class="fcn-pie-card">
-            <div class="pie-title">🥧 ${client} - FCN 名義本金佔比</div>
-            <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
-            <div class="chart-wrap" style="height:260px;">
-              <canvas id="${pieId}"></canvas>
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" 
+                 onclick="toggleChartContent('${pieId}')">
+              <div class="pie-title">🥧 ${client} - FCN 名義本金佔比</div>
+              <button class="secondary" style="padding:2px 8px;min-height:24px;font-size:11px;width:auto;" 
+                      onclick="event.stopPropagation(); toggleChartContent('${pieId}')">
+                <i class="fa-solid fa-chevron-down" id="chartIcon_${pieId}"></i>
+              </button>
             </div>
-            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
-              ${fcnData.map((d, i) => `
-                <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
-                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fcnColors[i % fcnColors.length]};"></span>
-                  ${d.label}：${formatCurrency(d.value)} (${d.status})
-                </span>
-              `).join('')}
+            <div id="chartContent_${pieId}" style="display:block;">
+              <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
+              <div class="chart-wrap" style="height:260px;">
+                <canvas id="${pieId}"></canvas>
+              </div>
+              <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
+                ${fcnData.map((d, i) => `
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
+                    <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fcnColors[i % fcnColors.length]};"></span>
+                    ${d.label}：${formatCurrency(d.value)} (${d.status})
+                  </span>
+                `).join('')}
+              </div>
             </div>
           </div>
         `;
       } else if (fcnData.length === 1) {
+        const pieId = `fcnPie_${client.replace(/\s/g, '_')}`;
         html += `
           <div class="fcn-pie-card">
-            <div class="pie-title">🥧 ${client} - FCN 名義本金</div>
-            <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
-            <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
-              ${fcnData[0].label}：${formatCurrency(fcnData[0].value)} (${fcnData[0].status})
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" 
+                 onclick="toggleChartContent('${pieId}')">
+              <div class="pie-title">🥧 ${client} - FCN 名義本金</div>
+              <button class="secondary" style="padding:2px 8px;min-height:24px;font-size:11px;width:auto;" 
+                      onclick="event.stopPropagation(); toggleChartContent('${pieId}')">
+                <i class="fa-solid fa-chevron-down" id="chartIcon_${pieId}"></i>
+              </button>
+            </div>
+            <div id="chartContent_${pieId}" style="display:block;">
+              <div class="total-fcn">總投入本金：<strong>${formatCurrency(totalFcn)}</strong> USD</div>
+              <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
+                ${fcnData[0].label}：${formatCurrency(fcnData[0].value)} (${fcnData[0].status})
+              </div>
             </div>
           </div>
         `;
       }
 
-      // ===== ★★★ 最終價值總資產（放在最下面） ★★★ =====
       const totalFinalValue = finalValueData.reduce((sum, d) => sum + d.value, 0);
       if (finalValueData.length > 1) {
         const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
         const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
         html += `
           <div class="final-value-pie-card">
-            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
-            <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
-            <div class="chart-wrap" style="height:260px;">
-              <canvas id="${pieId}"></canvas>
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" 
+                 onclick="toggleChartContent('${pieId}')">
+              <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+              <button class="secondary" style="padding:2px 8px;min-height:24px;font-size:11px;width:auto;" 
+                      onclick="event.stopPropagation(); toggleChartContent('${pieId}')">
+                <i class="fa-solid fa-chevron-down" id="chartIcon_${pieId}"></i>
+              </button>
             </div>
-            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
-              ${finalValueData.map((d, i) => `
-                <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
-                  <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
-                  ${d.label}：${formatCurrency(d.value)} (${d.status})
-                </span>
-              `).join('')}
+            <div id="chartContent_${pieId}" style="display:block;">
+              <div class="total-asset">總資產：<strong>${formatCurrency(totalFinalValue)}</strong> USD</div>
+              <div class="chart-wrap" style="height:260px;">
+                <canvas id="${pieId}"></canvas>
+              </div>
+              <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:#4b5563;">
+                ${finalValueData.map((d, i) => `
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px;">
+                    <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${fvColors[i % fvColors.length]};"></span>
+                    ${d.label}：${formatCurrency(d.value)} (${d.status})
+                  </span>
+                `).join('')}
+              </div>
             </div>
           </div>
         `;
       } else if (finalValueData.length === 1) {
+        const pieId = `finalValuePie_${client.replace(/\s/g, '_')}`;
         html += `
           <div class="final-value-pie-card">
-            <div class="pie-title">💰 ${client} - 最終價值總資產</div>
-            <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
-              ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" 
+                 onclick="toggleChartContent('${pieId}')">
+              <div class="pie-title">💰 ${client} - 最終價值總資產</div>
+              <button class="secondary" style="padding:2px 8px;min-height:24px;font-size:11px;width:auto;" 
+                      onclick="event.stopPropagation(); toggleChartContent('${pieId}')">
+                <i class="fa-solid fa-chevron-down" id="chartIcon_${pieId}"></i>
+              </button>
+            </div>
+            <div id="chartContent_${pieId}" style="display:block;">
+              <div style="padding:12px;background:#f3f4f6;border-radius:8px;text-align:center;color:#4b5563;font-size:14px;">
+                ${finalValueData[0].label}：${formatCurrency(finalValueData[0].value)} (${finalValueData[0].status})
+              </div>
             </div>
           </div>
         `;
       }
 
       html += `</div>`;
+      html += `</div>`;
     }
 
-    // ===== 堆疊長條圖 =====
     if (profitChartData.length > 0) {
       html += `
         <div class="card">
@@ -2022,7 +2585,6 @@ async function loadAll() {
 
     output.innerHTML = html;
 
-    // ===== 繪製堆疊長條圖 =====
     if (profitChartData.length > 0) {
       setTimeout(() => {
         const ctx = document.getElementById('profitStackChart')?.getContext('2d');
@@ -2072,7 +2634,6 @@ async function loadAll() {
       }, 300);
     }
 
-    // ===== 繪製最終價值總資產圓餅圖 =====
     setTimeout(() => {
       const fvColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
       for (const [client, groups] of Object.entries(clientGroups)) {
@@ -2117,7 +2678,6 @@ async function loadAll() {
       }
     }, 400);
 
-    // ===== 繪製 FCN 名義本金圓餅圖 =====
     setTimeout(() => {
       const fcnColors = ['#4f46e5', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
       for (const [client, groups] of Object.entries(clientGroups)) {
@@ -2162,7 +2722,6 @@ async function loadAll() {
       }
     }, 500);
 
-    // ===== ★★★ 繪製累積配息收益明細表圖表 ★★★ =====
     setTimeout(() => {
       for (const [client, groups] of Object.entries(clientGroups)) {
         for (const g of groups) {
@@ -2175,18 +2734,18 @@ async function loadAll() {
       }
     }, 600);
 
-    // ===== 股票點擊事件 =====
     document.querySelectorAll('.stock-card').forEach(el => {
       el.addEventListener('click', () => {
         const sid = el.dataset.stockid;
         const stock = stockCache.find(s => s.stockId === sid);
-        if (stock) openModal(stock);
+        if (stock) openModal(stock); 
       });
     });
 
   } catch(e) {
     output.innerHTML = `<div class="card" style="color:red;font-weight:bold;">❌ 抓取失敗：${e.message}</div>`;
   }
+  toggleAllContent('collapse');
 }
 
 // ========== 圖表 Modal ==========
@@ -2237,7 +2796,10 @@ function init() {
   loadSettings();
   document.getElementById('output').innerHTML = '<div class="card">請輸入資料後，點擊「抓取並顯示」按鈕開始追蹤 FCN 合約。</div>';
 }
-init();
+
+if (isLoggedIn) {
+  init();
+}
 </script>
 </body>
 </html>
